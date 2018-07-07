@@ -1,0 +1,30 @@
+{{#partial "content"}}
+<div class="panel panel-default">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>사용자 아이디</th>
+            <th>이름</th>
+            <th>이메일</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#users}}
+
+        {{#if @index}}
+        <tr>
+            <th scope="row">{{@index}}</th>
+            <td><a href="/users/{{@index}}">{{userId}}</a></td>
+            <td>{{name}}</td>
+            <td>{{email}}</td>
+            <td><a href="/users/{{@index}}/userForm" class="btn btn-success" role="button">수정</a></td>
+        </tr>
+        {{/if}}
+        {{/users}}
+        </tbody>
+    </table>
+</div>
+{{/partial}}
+{{> base}}
