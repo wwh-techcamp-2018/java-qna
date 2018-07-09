@@ -2,58 +2,61 @@ package codesquad.web;
 
 import codesquad.domain.User;
 import codesquad.dto.UserDto;
+import codesquad.exception.UserNotFoundException;
+import codesquad.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequestMapping("/users")
 public class UserController {
+    @Autowired
+    private UserRepository userRepository;
 
-    private List<User> users = new ArrayList<User>() {
-        {
-            add(new User("sadsd", "asdasd", "asdasd", "asdad"));
-            add(new User("s222adsd", "asda222sd", "as222dasd", "asdad222"));
-        }
-    };
-
-    @PostMapping("/users")
-    public String create(UserDto userDto) {
-        users.add(userDto.toEntity());
+    @PostMapping("")
+    public String create(UserDto dto) {
+        userRepository.save(dto.toEntity());
         return "redirect:/users";
     }
 
-    @GetMapping("/users")
+    @GetMapping("")
     public String list(Model model) {
-        model.addAttribute("users", users);
+        model.addAttribute("users", userRepository.findAll());
         return "/user/list";
     }
 
-    @GetMapping("/users/{index}")
-    public String show(@PathVariable int index, Model model) {
-        model.addAttribute("user", users.get(index));
+    @GetMapping("/{id}")
+    public String show(@PathVariable Long id, Model model) {
+        model.addAttribute("user", findUserOrThrow(id));
         return "/user/profile";
     }
 
-    @GetMapping("/users/{index}/form")
-    public String openUpdateForm(@PathVariable int index, Model model) {
-        model.addAttribute("user", users.get(index));
-        model.addAttribute("index", index);
-        return "/user/updateForm";
-    }
+    @PutMapping("/{id}")
+    public String updateUser(@PathVariable Long id, UserDto dto) {
+        User user = findUserOrThrow(id);
 
-    @PostMapping("/users/{index}/update")
-    public String updateUser(UserDto dto, @PathVariable int index) {
-        User user = users.get(index);
-
-        if (user.equalPassword(dto.getCurrentPassword())) {
-            user.update(dto);
+        if (user.update(dto)) {
+            userRepository.save(user);
         }
 
         return "redirect:/users";
+    }
+
+    @GetMapping("/{id}/form")
+    public String openUpdateForm(@PathVariable Long id, Model model) {
+        model.addAttribute("user", findUserOrThrow(id));
+        return "/user/updateForm";
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public String userNotFoundRedirect() {
+        return "redirect:/users";
+    }
+
+    private User findUserOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
     }
 }
