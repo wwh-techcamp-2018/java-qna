@@ -1,55 +1,51 @@
 package codesquad.web;
 
 import codesquad.domain.User;
+import codesquad.domain.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequestMapping("/users")
 public class UserController {
 
-    private List<User> users = new ArrayList<>();
+    @Autowired
+    private UserRepository userRepository;
 
-    @GetMapping("/users/{id}/form")
-    public String updateForm(@PathVariable int id, Model model) {
-        model.addAttribute("user", users.get(id));
+
+    @GetMapping
+    public String list(Model model) {
+        model.addAttribute("users", userRepository.findAll());
+        return "/user/list";
+    }
+
+    @PostMapping
+    public String create(User user) {
+        userRepository.save(user);
+        return "redirect:/users";
+    }
+
+    @GetMapping("/{id}")
+    public String show(@PathVariable Long id, Model model) {
+        model.addAttribute("user", userRepository.findById(id).get());
+        return "/user/profile";
+    }
+
+    @GetMapping("/{id}/form")
+    public String updateForm(@PathVariable Long id, Model model) {
+        model.addAttribute("user", userRepository.findById(id).get());
         model.addAttribute("id", id);
         return "/user/updateForm";
     }
 
-    @PostMapping("/users/{id}/update")
-    public String update(@PathVariable int id, User user) {
-        verifyUser(id, user);
+    @PutMapping("/{id}")
+    public String update(@PathVariable Long id, User newUser) {
+        User user = userRepository.findById(id).get();
+        user.update(newUser);
+        userRepository.save(user);
         return "redirect:/users";
-    }
-
-    private void verifyUser(int id, User user) {
-        if (user.equals(users.get(id))) {
-            users.set(id, user);
-        }
-    }
-
-    @GetMapping("/users/{id}")
-    public String show(@PathVariable int id, Model model) {
-        model.addAttribute("user", users.get(id));
-        return "/user/profile";
-    }
-
-    @PostMapping("/users")
-    public String create(User user) {
-        users.add(user);
-        return "redirect:/users";
-    }
-
-    @GetMapping("/users")
-    public String list(Model model) {
-        model.addAttribute("users", users);
-        return "/user/list";
     }
 
 }
