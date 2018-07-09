@@ -1,10 +1,19 @@
 package codesquad.domain;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
 public class User {
+    @Id // primary키
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // primary키 자동 증가
+    private Long Id;
+
+    @Column(length = 30, unique = true, nullable = false)
     private String userId;
+    @Column(length = 30, nullable = false)
     private String password;
+    @Column(length = 30, nullable = false)
     private String name;
     private String email;
 
@@ -16,6 +25,12 @@ public class User {
         this.password = password;
         this.name = name;
         this.email = email;
+    }
+
+
+
+    public void setId(Long id) {
+        Id = id;
     }
 
     public void setUserId(String userId) {
@@ -32,6 +47,10 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Long getId() {
+        return Id;
     }
 
     public String getUserId() {

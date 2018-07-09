@@ -1,61 +1,51 @@
 package codesquad.web;
 
 import codesquad.domain.User;
+import codesquad.domain.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
+@RequestMapping("/users")
 public class UserController {
-    private List<User> users = new ArrayList<>();
+    @Autowired
+    private UserRepository userRepository;
 
-    @GetMapping("/users/{index}")
-    public String show(@PathVariable int index, Model model) {
-        model.addAttribute("user", users.get(index));
+    @GetMapping("/{index}")
+    public String show(@PathVariable Long id, Model model) {
+        model.addAttribute("user", userRepository.findById(id));
         return "/user/profile";
     }
 
-    @PostMapping("/users")
+    @PostMapping("")
     public String create(User user) {
-        users.add(user);
+        userRepository.save(user);
         return "redirect:/users";
     }
 
-    @GetMapping("/users")
+    @GetMapping("")
     public String list(Model model) {
-        model.addAttribute("users", users);
+        model.addAttribute("users", userRepository.findAll());
         return "/user/list";
     }
 
 
-    @GetMapping("/users/{id}/form")
-    public String edit(@PathVariable String id, Model model) {
-        model.addAttribute("user", findUser(id));
-        model.addAttribute("id", id);
+    @GetMapping("/{id}/form")
+    public String edit(@PathVariable Long id, Model model) {
+        model.addAttribute("user", userRepository.findById(id).get());
         return "/user/updateForm";
     }
 
-    @PostMapping("/users/{id}/update")
-    public String update(@PathVariable String id, User modifiedUser, String oldPassword) {
-        User user = findUser(id);
-
-        if (user == null)
-            return "redirect:/users";
-
+    @PutMapping("/{id}/update")
+    public String update(@PathVariable Long id, User modifiedUser, String oldPassword) {
+        User user = userRepository.findById(id).get();
         user.update(modifiedUser, oldPassword);
+        userRepository.save(user);
         return "redirect:/users";
-    }
-
-    private User findUser(String id) {
-        for (User user : users) {
-            if(user.getUserId().equals(id))
-                return user;
-        }
-        return null;
     }
 }
