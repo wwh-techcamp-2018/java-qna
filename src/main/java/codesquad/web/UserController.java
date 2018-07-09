@@ -1,21 +1,57 @@
 package codesquad.web;
 
 import codesquad.domain.User;
+import codesquad.domain.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
+@RequestMapping("/users")
 public class UserController {
-    private List<User> users = new ArrayList<>();
+    @Autowired
+    private UserRepository userRepository;
 
-//
+    @PostMapping("")
+    public String create(User user) {
+        //users.add(user);
+        userRepository.save(user);
+        return "redirect:/users";
+    }
+
+    @GetMapping("")
+    public String list(Model model) {
+        model.addAttribute("users", userRepository.findAll());
+        return "/user/list";
+    }
+
+    @GetMapping("/{index}")
+    public String show(@PathVariable Long index, Model model) {
+        User user = userRepository.findById(index).get();
+        model.addAttribute("user", user);
+        return "/user/profile";
+    }
+
+    @GetMapping("/{id}/form")
+    public String findUser(@PathVariable Long id, Model model) {
+        User user = userRepository.findById(id).get();
+        model.addAttribute("user", user);
+        return "/user/updateForm";
+    }
+
+    @PutMapping("")
+    public String updateUser(User user, HttpServletResponse response) {
+        if (user.update(userRepository)) {
+            return "redirect:/users";
+        }
+        WebUtil.alert("비밀번호가 틀렸습니다.", response);
+        return null;
+    }
+
+    //
 //    @PostMapping("/users")
 //    public ModelAndView create2(String userId,
 //                                String password,
@@ -30,7 +66,7 @@ public class UserController {
 //
 
 
-//    @PostMapping("/users")
+    //    @PostMapping("/users")
 //    public String create(String userId,
 //                                String password,
 //                                String name,
@@ -41,26 +77,4 @@ public class UserController {
 //        model.addAttribute("users",users);
 //        return "/user/list";
 //    }
-
-
-
-    @PostMapping("/users")
-    public String create(User user){
-        users.add(user);
-        return "redirect:/users";
-    }
-
-
-    @GetMapping("/users")
-    public String list(Model model){
-        model.addAttribute("users",users);
-        return "/user/list";
-    }
-
-    @GetMapping("/users/{index}")
-    public String show(@PathVariable int index, Model model){
-        model.addAttribute("user",users.get(index));
-        return "/user/profile";
-    }
-
 }
