@@ -13,11 +13,11 @@
               <tbody>
                 {{#users}}
                 <tr>
-                    <th scope="row">1</th>
-                    <td><a href="/users/{{@index}}">{{userId}}</a></td> <!-- Actually call getter of user object -->
+                    <th scope="row">{{@index_1}}</th>
+                    <td><a href="/users/{{id}}">{{userId}}</a></td> <!-- Actually call getter of user object -->
                     <td>{{name}}</td>
                     <td>{{email}}</td>
-                    <td><a href="/users/{{@index}}/form" class="btn btn-success" role="button">수정</a></td>
+                    <td><a href="/users/{{id}}/form" class="btn btn-success" role="button">수정</a></td>
                 </tr>
                 {{/users}}
               </tbody>
