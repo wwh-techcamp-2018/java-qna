@@ -1,34 +1,59 @@
 package codesquad.web;
 
 import codesquad.domain.User;
+import codesquad.domain.UserRepository;
+import codesquad.dto.user.UserRegisterDto;
+import codesquad.dto.user.UserUpdateDto;
+import codesquad.exception.NotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequestMapping("/users")
 public class UserController {
-    private List<User> users = new ArrayList<>();
+    @Autowired
+    private UserRepository userRepository;
 
-    @PostMapping("/users")
-    public String create(User user) {
-        users.add(user);
+    @PostMapping("")
+    public String create(UserRegisterDto dto) {
+        userRepository.save(dto.toEntity());
         return "redirect:/users";
     }
 
-    @GetMapping("/users")
+    @GetMapping("")
     public String list(Model model) {
-        model.addAttribute("users", users);
+        model.addAttribute("users", userRepository.findAll());
         return "/user/list";
     }
 
-    @GetMapping("/users/{index}")
-    public String show(@PathVariable int index, Model model) {
-        model.addAttribute("user", users.get(index));
+    @GetMapping("/{id}")
+    public String show(@PathVariable long id, Model model) {
+        model.addAttribute("user", searchUser(id));
         return "/user/profile";
+    }
+
+    @GetMapping("/{id}/form")
+    public String updateForm(@PathVariable long id, Model model) {
+        model.addAttribute("user", searchUser(id));
+        return "/user/updateForm";
+    }
+
+    @PutMapping("/{id}")
+    public String updateUser(@PathVariable long id, UserUpdateDto dto) {
+        User user = searchUser(id);
+        user.update(dto);
+        userRepository.save(user);
+        return "redirect:/users";
+    }
+
+    private User searchUser(long id) {
+        return userRepository.findById(id).orElseThrow(NotFoundException::new);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public String handleUserNotFoundException() {
+        return "redirect:/";
     }
 }
