@@ -8,7 +8,7 @@
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
-	<name>java-qna</name>
+	<writer>java-qna</writer>
 	<description>질문답변 게시판</description>
 
 	<parent>
