@@ -2,10 +2,14 @@ package codesquad.web;
 
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
+import codesquad.exception.InvalidLoginException;
+import codesquad.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/qnas")
@@ -14,14 +18,16 @@ public class QuestionController {
     @Autowired
     private QuestionRepository questionRepository;
 
-    @GetMapping("")
+    @GetMapping
     public String index(Model model) {
         model.addAttribute("qnas", questionRepository.findAll());
         return "index";
     }
 
-    @PostMapping("")
-    public String create(Question question) {
+    @PostMapping
+    public String create(Question question, HttpSession session) {
+        question.setWriter(SessionUtil.getUser(session)
+                .orElseThrow(() -> new InvalidLoginException("로그인이 필요합니다")));
         questionRepository.save(question);
         return "redirect:/";
     }
@@ -32,8 +38,19 @@ public class QuestionController {
         return "/qna/show";
     }
 
+    @GetMapping("/form")
+    public String showForm(Model model, HttpSession session) {
+        model.addAttribute("user", SessionUtil.getUser(session)
+                .orElseThrow(() -> new InvalidLoginException("로그인이 필요합니다")));
+        return "/qna/form";
+    }
+
     @GetMapping("/{id}/form")
-    public String updateForm(@PathVariable("id") Question question, Model model) {
+    public String updateForm(@PathVariable("id") Question question, Model model, HttpSession session) {
+        if (!question.matchWriter(SessionUtil.getUser(session)
+                .orElseThrow(() -> new InvalidLoginException("로그인이 필요합니다")).getUserId())) {
+            throw new InvalidLoginException("다른 사용자의 글을 수정할 수는 없습니다.");
+        }
         model.addAttribute("qna", question);
         return "/qna/updateForm";
     }
@@ -42,11 +59,18 @@ public class QuestionController {
     public String update(@PathVariable Long id, Question question) {
         Question updatedQuestion = questionRepository.findById(id).get().updateQuestion(question);
         questionRepository.save(updatedQuestion);
-        return "redirect:/qnas";
+        return "redirect:/qnas/{id}";
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id, HttpSession session) {
+        SessionUtil.getUser(session)
+                .orElseThrow(() -> new InvalidLoginException("로그인이 필요합니다")).getUserId();
+
+        Question question = questionRepository.findById(id).get();
+        if (!question.matchWriter(SessionUtil.getUserId(session))) {
+            throw new InvalidLoginException("다른 사용자의 글을 삭제할 수는 없습니다.");
+        }
         questionRepository.deleteById(id);
         return "redirect:/qnas";
     }

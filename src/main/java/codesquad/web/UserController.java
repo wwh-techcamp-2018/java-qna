@@ -2,16 +2,15 @@ package codesquad.web;
 
 import codesquad.domain.User;
 import codesquad.domain.UserRepository;
+import codesquad.exception.InvalidLoginException;
+import codesquad.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpSession;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/users")
@@ -20,19 +19,31 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @PostMapping("/login")
+    public String login(String userId, String password, HttpSession session) {
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new InvalidLoginException("회원가입이 안된 아이디입니다."));
+
+        if (!user.matchPassword(password)) {
+            throw new InvalidLoginException("패스워드가 다릅니다.");
+        }
+
+        SessionUtil.setUser(session, user);
+        return "redirect:/";
+    }
+
     @GetMapping("/{id}")
     public String show(@PathVariable Long id, Model model) {
         model.addAttribute("user", userRepository.findById(id).get());
         return "/user/profile";
     }
 
-    @PostMapping("")
+    @PostMapping
     public String create(User user) {
         userRepository.save(user);
         return "redirect:/users";
     }
 
-    @GetMapping("")
+    @GetMapping
     public String list(Model model) {
         model.addAttribute("users", userRepository.findAll());
         return "/user/list";
@@ -44,12 +55,13 @@ public class UserController {
         return "/user/updateForm";
     }
 
-    @PostMapping("/{id}/update")
-    public String update(@PathVariable Long id, User user) {
-        User dbUser =  userRepository.findById(id).get();
-        if (!dbUser.checkValidity(user)) {
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
+    @PutMapping("/{id}")
+    public String update(@PathVariable Long id, User user, HttpSession session) {
+        if(!SessionUtil.checkLoginUser(session, user)) {
+            throw new InvalidLoginException("다른 사용자의 정보는 수정할 수 없습니다.");
         }
+
+        User dbUser =  userRepository.findById(id).get();
         userRepository.save(dbUser.updateUser(user));
         return "redirect:/users";
     }

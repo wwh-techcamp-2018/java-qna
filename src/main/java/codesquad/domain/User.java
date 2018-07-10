@@ -7,11 +7,11 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(length = 30, unique = true, nullable = false) // Not Null, unique, 등등을 설정
+    @Column(name = "user_id", length = 30, unique = true, nullable = false) // Not Null, unique, 등등을 설정
     private String userId;
     @Column(length = 100, nullable = false)
     private String password;
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, unique = true, nullable = false)
     private String name;
     @Column(length = 50, nullable = false)
     private String email;
@@ -67,15 +67,23 @@ public class User {
     }
 
     public User updateUser(User user) {
+        if (!matchPassword(user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 틀립니다.");
+        }
         this.email = user.email;
         this.name = user.name;
         return this;
     }
 
-    public boolean checkValidity(User user) {
-        if (!this.password.equals(user.getPassword())) {
-            return false;
-        }
-        return true;
+    public boolean matchPassword(String password) {
+        return this.password.equals(password);
+    }
+
+    public boolean matchUserId(String userId) {
+        return this.userId.equals(userId);
+    }
+
+    public boolean matchName(String name) {
+        return this.name.equals(name);
     }
 }
