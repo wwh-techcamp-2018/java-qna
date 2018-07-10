@@ -36,7 +36,7 @@ public class UserServiceTest {
         }
 
         @Override
-        public User findByUserId(String userId) {
+        public Optional<User> findByUserId(String userId) {
             throw new UnsupportedOperationException();
         }
 

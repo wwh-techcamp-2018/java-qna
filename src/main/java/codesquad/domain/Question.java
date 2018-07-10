@@ -9,11 +9,13 @@ import java.util.Date;
 public class Question {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // 새 data 추가시 id 가 자동으로 증가
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(updatable = false, length = 30, nullable = false)
-    private String writer;
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
+
     @Column(length = 100, nullable = false)
     private String title;
     @Column(nullable = false)
@@ -21,9 +23,11 @@ public class Question {
     @Column(length = 16, nullable = false)
     private String date;
 
+
     public Question() {
         date = DateUtil.getFormattedDate(new Date(), "yyyy-MM-dd HH:mm");
     }
+
 
     public String getDate() {
         return date;
@@ -37,11 +41,11 @@ public class Question {
         this.id = id;
     }
 
-    public String getWriter() {
+    public User getWriter() {
         return writer;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
@@ -61,14 +65,17 @@ public class Question {
         this.contents = contents;
     }
 
-    public void updateQuestion(Question updateQuestion) {
-        if (!isOwner(updateQuestion))
-            return;
+    public boolean updateQuestion(Question updateQuestion, User user) {
+        if (!isOwner(user))
+            return false;
         setTitle(updateQuestion.getTitle());
         setContents(updateQuestion.getContents());
+        return true;
     }
 
-    private boolean isOwner(Question question) {
-        return this.writer.equals(question.writer);
+    public boolean isOwner(User user) {
+        if (user == null)
+            return false;
+        return this.writer.isSameUser(user);
     }
 }

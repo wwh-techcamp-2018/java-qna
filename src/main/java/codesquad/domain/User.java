@@ -3,14 +3,13 @@ package codesquad.domain;
 import javax.persistence.*;
 import java.util.Objects;
 
-// DTO 라고 볼 수 있다.
 @Entity
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // 새 data 추가시 id 가 자동으로 증가
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 30, unique = true, nullable = false)   // not null 강제하기 + 중복 없게 + length 30 이하
+    @Column(length = 30, unique = true, nullable = false)
     private String userId;
     @Column(length = 10, nullable = false)
     private String password;
@@ -19,8 +18,6 @@ public class User {
     private String email;
 
 
-    // Spring framework 에서는 default constructor 가 필요하다.
-    // java bean 의 convention
     public User() {
 
     }
@@ -33,8 +30,7 @@ public class User {
         this.email = email;
     }
 
-    // Spring framework 에서 내부적으로 setter method 에 접근
-    // java bean 의 convention 이다.
+
     public void setUserId(String userId) {
         this.userId = userId;
     }
@@ -55,8 +51,7 @@ public class User {
         this.email = email;
     }
 
-    // template engine 에서 내부적으로 getter method 에서 접근
-    // java bean convention!!
+
     public String getUserId() {
         return userId;
     }
@@ -77,16 +72,18 @@ public class User {
         this.id = id;
     }
 
-    public boolean isSameId(String id) {
-        return id.equals(userId);
+    public boolean isSameUser(User user) {
+        if(user == null)
+            return false;
+        return this.id.equals(user.getId());
     }
 
-    private boolean isSamePassword(User user) {
-        return password.equals(user.password);
+    public boolean isSamePassword(String password) {
+        return this.password.equals(password);
     }
 
     public void updateUser(User updated) {
-        if (!isSamePassword(updated))
+        if (!isSamePassword(updated.password))
             return;
         this.name = updated.name;
         this.password = updated.password;
@@ -98,15 +95,17 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(getId(), user.getId()) &&
-                Objects.equals(getUserId(), user.getUserId()) &&
-                Objects.equals(getPassword(), user.getPassword()) &&
-                Objects.equals(getName(), user.getName()) &&
-                Objects.equals(getEmail(), user.getEmail());
+        return Objects.equals(id, user.id) &&
+                Objects.equals(userId, user.userId) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getUserId(), getPassword(), getName(), getEmail());
+
+        return Objects.hash(id, userId, password, name, email);
     }
+
 }
