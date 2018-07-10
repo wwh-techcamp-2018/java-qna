@@ -5,7 +5,7 @@ import codesquad.web.domain.QuestionRepository;
 import codesquad.web.domain.User;
 import codesquad.web.domain.UserRepository;
 
-public class Util {
+public class RepositoryUtil {
 
     public static Question findQuestionById(long id, QuestionRepository qr){
         return qr.findById(id).get();

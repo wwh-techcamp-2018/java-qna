@@ -1,25 +1,24 @@
 package codesquad.web.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String writer;
+    @Column(nullable = false, length = 100)
     private String title;
+    @Lob
     private String contents;
-
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
 
     public Question() {
     }
 
-    public Question(String writer, String title, String contents) {
+    public Question(String title, String contents, User writer) {
         this.writer = writer;
         this.title = title;
         this.contents = contents;
@@ -29,11 +28,11 @@ public class Question {
         return id;
     }
 
-    public String getWriter() {
+    public User getWriter() {
         return writer;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
