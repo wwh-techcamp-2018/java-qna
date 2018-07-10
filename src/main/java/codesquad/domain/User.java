@@ -2,6 +2,8 @@ package codesquad.domain;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 public class User {
@@ -30,6 +32,10 @@ public class User {
 
     public User() {
 
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getUserId() {
@@ -69,5 +75,27 @@ public class User {
             name = target.name;
             email = target.email;
         }
+    }
+
+    public static boolean isCorrectUser(Optional<User> optionalUser) {
+        return optionalUser.isPresent();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) &&
+                Objects.equals(userId, user.userId) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, userId, password, name, email);
     }
 }

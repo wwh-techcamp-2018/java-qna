@@ -1,32 +1,26 @@
 package codesquad.web;
 
-import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
+import codesquad.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 
 @Controller
-@RequestMapping({ "/", "/questions" })
+@RequestMapping("/questions")
 public class QuestionController {
-    private final String QUESTION_ROOT_PATH = "/questions";
-    private long questionId = 0;
 
     @Autowired
     private QuestionRepository questionRepository;
 
-    @GetMapping("")
-    public String list(Model model) {
-        model.addAttribute("questions",questionRepository.findAll());
-        return "/index";
-    }
-
     @PostMapping("")
-    public String create(Question question) {
+    public String create(Question question, HttpSession session) {
+        question.setWriter(SessionUtil.getUser(session));
         questionRepository.save(question);
         return "redirect:/";
     }
@@ -43,8 +37,10 @@ public class QuestionController {
         return "/qna/updateForm";
     }
 
-    @PostMapping("/{id}")
-    public String update(@PathVariable Long id, Question question) {
+    @PutMapping("/{id}")
+    public String update(@PathVariable Long id, Question question, HttpSession session, Model model) throws UserNotMatchException {
+        User user = SessionUtil.getUser(session);
+        question.setWriter(user);
         Question questionOrigin = findById(id);
         questionOrigin.update(question);
         questionRepository.save(questionOrigin);
@@ -52,10 +48,18 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id, HttpSession session, Model model) throws UserNotMatchException {
+        User user = SessionUtil.getUser(session);
         Question questionOrigin = findById(id);
+        questionOrigin.isWriter(user);
         questionRepository.delete(questionOrigin);
         return "redirect:/";
+    }
+
+    @GetMapping("/form")
+    public String showForm(HttpSession session) {
+        SessionUtil.getUser(session);
+        return "qna/form";
     }
 
     public Question findById(Long id) {

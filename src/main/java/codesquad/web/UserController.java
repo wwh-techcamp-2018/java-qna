@@ -5,17 +5,17 @@ import codesquad.domain.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/users") // 대표 URL을 요청에 매핑
 public class UserController {
+
     @Autowired // Spring framework이 자동으로 인터페이스 - 객체 매핑을 해줍니다.
     private UserRepository userRepository;
 
@@ -27,8 +27,13 @@ public class UserController {
     }
 
     @GetMapping("")
-    public String list(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+    public String list(Model model, HttpSession session) {
+        User sessionedUser = SessionUtil.getUser(session);
+        if (sessionedUser == null) {
+            model.addAttribute("users", userRepository.findAll());
+            return "/user/list";
+        }
+        model.addAttribute("users", userRepository.findByIdNot(sessionedUser.getId()));
         return "/user/list";
     }
 
@@ -44,11 +49,30 @@ public class UserController {
         return "/user/updateForm";
     }
 
-    @PostMapping("/{userId}")
-    public String update(User user) {
+    @PutMapping("/{userId}")
+    public String update(User user, HttpSession session) {
         User userOrigin = userRepository.findByUserId(user.getUserId());
         userOrigin.update(user);
+        SessionUtil.removeUser(session);
+        SessionUtil.setUser(session, userOrigin);
         userRepository.save(userOrigin);
         return "redirect:/users";
+    }
+
+    @PostMapping("/login")
+    public String login(String userId, String password, HttpSession session) {
+        Optional<User> optionalUser = userRepository.findByUserIdAndPassword(userId, password);
+        if (User.isCorrectUser(optionalUser)) {
+            SessionUtil.setUser(session, optionalUser.get());
+            return "redirect:/";
+        }
+        return "/user/login_failed";
+
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        SessionUtil.removeUser(session);
+        return "redirect:/";
     }
 }
