@@ -7,7 +7,7 @@ import java.util.Objects;
 public class User {
     @Id // primary키
     @GeneratedValue(strategy = GenerationType.IDENTITY) // primary키 자동 증가
-    private Long Id;
+    private Long id;
 
     @Column(length = 30, unique = true, nullable = false)
     private String userId;
@@ -30,7 +30,7 @@ public class User {
 
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public void setUserId(String userId) {
@@ -50,7 +50,7 @@ public class User {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public String getUserId() {
@@ -83,6 +83,10 @@ public class User {
         return this;
     }
 
+    public boolean isSameId(Long id) {
+        return this.id == id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -98,5 +102,16 @@ public class User {
     public int hashCode() {
 
         return Objects.hash(userId, password, name, email);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", userId='" + userId + '\'' +
+                ", password='" + password + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

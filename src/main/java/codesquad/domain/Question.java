@@ -11,8 +11,9 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 10, nullable = false)
-    private String writer;
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
     @Column(nullable = false)
     private String title;
     @Lob
@@ -23,7 +24,7 @@ public class Question {
     public Question() {
     }
 
-    public Question(String writer, String title, String contents) {
+    public Question(User writer, String title, String contents) {
         this.writer = writer;
         this.title = title;
         this.contents = contents;
@@ -37,7 +38,7 @@ public class Question {
         this.id = id;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
@@ -63,7 +64,7 @@ public class Question {
         this.time = time;
     }
 
-    public String getWriter() {
+    public User getWriter() {
         return writer;
     }
 
@@ -76,7 +77,6 @@ public class Question {
     }
 
     public Question update(Question modifiedQuestion) {
-        setWriter(modifiedQuestion.getWriter());
         setTitle(modifiedQuestion.getTitle());
         setContents(modifiedQuestion.getContents());
 
@@ -98,5 +98,20 @@ public class Question {
     @Override
     public int hashCode() {
         return Objects.hash(id, writer, title, contents, time);
+    }
+
+    @Override
+    public String toString() {
+        return "Question{" +
+                "id=" + id +
+                ", writer=" + writer +
+                ", title='" + title + '\'' +
+                ", contents='" + contents + '\'' +
+                ", time='" + time + '\'' +
+                '}';
+    }
+
+    public Long getWriterId() {
+        return writer.getId();
     }
 }
