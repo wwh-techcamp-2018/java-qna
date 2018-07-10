@@ -1,8 +1,10 @@
 package codesquad.domain;
 
 import codesquad.dto.UserDto;
+import codesquad.exception.PasswordMismatchException;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 public class User {
@@ -66,15 +68,34 @@ public class User {
                 '}';
     }
 
-    public boolean update(UserDto dto) {
-        if (!equalPassword(dto.getCurrentPassword())) {
-            return false;
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) &&
+                Objects.equals(userId, user.userId) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
+    }
 
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, userId, password, name, email);
+    }
+
+    public boolean update(UserDto dto) {
+        matchPassword(dto.getPassword());
         this.email = dto.getEmail();
         this.name = dto.getName();
-        this.password = dto.getPassword();
-
         return true;
+    }
+
+    public void matchPassword(String password) {
+        if (!this.password.equals(password)) {
+            throw new PasswordMismatchException();
+        }
     }
 }

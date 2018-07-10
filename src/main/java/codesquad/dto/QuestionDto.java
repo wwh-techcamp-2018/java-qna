@@ -1,21 +1,13 @@
 package codesquad.dto;
 
 import codesquad.domain.Question;
+import codesquad.domain.User;
 
 public class QuestionDto {
-    private String writer;
     private String title;
     private String contents;
 
     public QuestionDto() {
-    }
-
-    public String getWriter() {
-        return writer;
-    }
-
-    public void setWriter(String writer) {
-        this.writer = writer;
     }
 
     public String getTitle() {
@@ -34,7 +26,7 @@ public class QuestionDto {
         this.contents = contents;
     }
 
-    public Question toEntity() {
-        return new Question(writer, title, contents);
+    public Question toEntity(User user) {
+        return new Question(user, title, contents);
     }
 }

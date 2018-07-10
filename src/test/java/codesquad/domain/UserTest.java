@@ -1,6 +1,7 @@
 package codesquad.domain;
 
 import codesquad.dto.UserDto;
+import codesquad.exception.PasswordMismatchException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,20 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserTest {
     private User user;
-    private UserDto dto;
 
     @Before
     public void setUp() throws Exception {
         user = new User("testuser", "password", "name", "email");
-        dto = new UserDto(user.getUserId(),
-                "newPassword",
-                user.getPassword(),
-                "newName",
-                "newEmail");
     }
 
     @Test
     public void update() {
+        UserDto dto = new UserDto(user.getUserId(),
+                user.getPassword(),
+                "newName",
+                "newEmail");
         assertThat(user.update(dto)).isTrue();
         assertThat(user.getPassword()).isEqualTo(dto.getPassword());
         assertThat(user.getName()).isEqualTo(dto.getName());
@@ -29,16 +28,13 @@ public class UserTest {
     }
 
 
-    @Test
+    @Test(expected = PasswordMismatchException.class)
     public void updateWithWrongPassword() {
-        dto = new UserDto(user.getUserId(),
-                "newPassword",
+        UserDto dto = new UserDto(user.getUserId(),
                 "wrongPassword",
                 "newName",
                 "newEmail");
-        assertThat(user.update(dto)).isFalse();
-        assertThat(user.getPassword()).isNotEqualTo(dto.getPassword());
-        assertThat(user.getName()).isNotEqualTo(dto.getName());
-        assertThat(user.getEmail()).isNotEqualTo(dto.getEmail());
+
+        user.update(dto);
     }
 }

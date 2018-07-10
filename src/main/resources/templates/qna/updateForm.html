@@ -4,10 +4,6 @@
         {{#question}}
         <form name="question" method="post" action="/questions/{{id}}">
             <div class="form-group">
-                <label for="writer">글쓴이</label>
-                <input class="form-control" id="writer" name="writer" placeholder="{{writer}}"/>
-            </div>
-            <div class="form-group">
                 <label for="title">제목</label>
                 <input type="text" class="form-control" id="title" name="title" placeholder="{{title}}"/>
             </div>
@@ -16,7 +12,7 @@
                 <textarea name="contents" id="contents" rows="5" class="form-control">{{contents}}</textarea>
             </div>
             <input type="hidden" name="_method" value="PUT" />
-            <button type="submit" class="btn btn-success clearfix pull-right">질문하기</button>
+            <button type="submit" class="btn btn-success clearfix pull-right">수정하기</button>
             <div class="clearfix" />
         </form>
         {{/question}}

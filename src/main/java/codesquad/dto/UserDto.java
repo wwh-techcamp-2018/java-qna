@@ -5,14 +5,12 @@ import codesquad.domain.User;
 public class UserDto {
     private String userId;
     private String password;
-    private String currentPassword;
     private String name;
     private String email;
 
-    public UserDto(String userId, String password, String currentPassword, String name, String email) {
+    public UserDto(String userId, String password, String name, String email) {
         this.userId = userId;
         this.password = password;
-        this.currentPassword = currentPassword;
         this.name = name;
         this.email = email;
     }
@@ -23,14 +21,6 @@ public class UserDto {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getCurrentPassword() {
-        return currentPassword;
-    }
-
-    public void setCurrentPassword(String currentPassword) {
-        this.currentPassword = currentPassword;
     }
 
     public String getPassword() {
