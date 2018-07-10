@@ -81,6 +81,20 @@ public class User {
         this.email = newUser.email;
     }
 
+    public boolean checkPassword(String password){
+        if(this.password.equals(password)) return true;
+        return false;
+    }
+
+    public boolean checkPassword(User user){
+        if(this.password.equals(user.getPassword())) return true;
+        return false;
+    }
+
+    public boolean checkUserId(String userId){
+        if(this.userId.equals(userId)) return true;
+        return false;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

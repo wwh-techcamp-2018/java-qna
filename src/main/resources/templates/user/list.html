@@ -10,13 +10,16 @@
                 </thead>
                 <tbody>
                 {{#users}}
-                <tr>
-                    <th scope="row">{{@index_1}}</th>
-                    <td><a href="/users/{{id}}">{{userId}}</a></td>
-                    <td>{{name}}</td>
-                    <td>{{email}}</td>
-                    <td><a href="/users/{{id}}/form" class="btn btn-success" role="button">수정</a></td>
-                </tr>
+                <form name="update" method="post" action="/users/form">
+                    <input type="hidden" id="userId" name="userId" placeholder="User ID" value="{{userId}}">
+                    <tr>
+                        <th scope="row">{{id}}</th>
+                        <td><a href="/users/{{id}}">{{userId}}</a></td>
+                        <td>{{name}}</td>
+                        <td>{{email}}</td>
+                        <td><button class="btn btn-success" onclick="submit">수정</button>
+                    </tr>
+                </form>
                 <!--<tr>-->
                 <!--<th scope="row">1</th> <td>javajigi</td> <td>자바지기</td> <td>javajigi@sample.net</td><td><a href="#" class="btn btn-success" role="button">수정</a></td>-->
                 <!--</tr>-->

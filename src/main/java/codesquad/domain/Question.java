@@ -1,7 +1,5 @@
 package codesquad.domain;
 
-import org.springframework.web.bind.annotation.ModelAttribute;
-
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -11,8 +9,9 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 10, nullable = false)
-    private String writer;
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
 
     @Column(nullable = false)
     private String title;
@@ -25,7 +24,7 @@ public class Question {
 
     }
 
-    public Question(Long id, String writer, String title, String contents) {
+    public Question(Long id, User writer, String title, String contents) {
         this.id = id;
         this.writer = writer;
         this.title = title;
@@ -40,11 +39,11 @@ public class Question {
         this.id = id;
     }
 
-    public String getWriter() {
+    public User getWriter() {
         return writer;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
@@ -65,9 +64,13 @@ public class Question {
     }
 
     public void update(Question newQuestion) {
-        this.writer = newQuestion.writer;
         this.title = newQuestion.title;
         this.contents = newQuestion.contents;
+    }
+
+    public boolean checkWriter(User writer) {
+        if (this.writer.equals(writer)) return true;
+        return false;
     }
 
     @Override
@@ -75,8 +78,7 @@ public class Question {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Question question = (Question) o;
-        return Objects.equals(id, question.id) &&
-                Objects.equals(writer, question.writer);
+        return Objects.equals(id, question.id);
     }
 
     @Override
