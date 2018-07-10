@@ -1,5 +1,7 @@
 package codesquad.domain;
 
+import codesquad.exception.InvalidPasswordException;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -72,14 +74,26 @@ public class User {
     }
 
     public void update(User user) {
-        if (!canUpdate(user)) return;
-        this.setName(user.getName());
-        this.setEmail(user.getEmail());
+        if (!matchUserId(user.userId)) {
+            return;
+        }
+        if (!matchPassword(user.password)) {
+            return;
+        }
+        this.setName(user.name);
+        this.setEmail(user.email);
     }
 
-    private boolean canUpdate(User user) {
-        if (!getPassword().equals(user.getPassword())) return false;
-        return true;
+    public boolean matchId(Long id) {
+        return this.id == id;
+    }
+
+    public boolean matchUserId(String userId) {
+        return this.userId.equals(userId);
+    }
+
+    public boolean matchPassword(String password) {
+        return this.password.equals(password);
     }
 
     @Override

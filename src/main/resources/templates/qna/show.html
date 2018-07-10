@@ -13,7 +13,7 @@
                                  class="article-author-thumb" alt="">
                         </div>
                         <div class="article-header-text">
-                            <a href="/users/92/kimmunsu" class="article-author-name">{{writer}}</a>
+                            <a href="/users/{{writer.id}}" class="article-author-name">{{writer.name}}</a>
                             <a href="/questions/413" class="article-header-time" title="퍼머링크">
                                 2015-12-30 01:47
                                 <i class="icon-link"></i>
@@ -25,6 +25,7 @@
                     </div>
                     <div class="article-util">
                         <ul class="article-util-list">
+                            {{#if matchWriter}}
                             <li>
                                 <a class="link-modify-article" href="/questions/{{id}}/form">수정</a>
                             </li>
@@ -34,8 +35,9 @@
                                     <button class="link-delete-article" type="submit">삭제</button>
                                 </form>
                             </li>
+                            {{/if}}
                             <li>
-                                <a class="link-modify-article" href="/index.html">목록</a>
+                                <a class="link-modify-article" href="/">목록</a>
                             </li>
                         </ul>
                     </div>

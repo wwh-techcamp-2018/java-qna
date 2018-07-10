@@ -9,8 +9,9 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(updatable = false, length = 15, nullable = false)
-    private String writer;
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
 
     @Column(length = 30, nullable = false)
     private String title;
@@ -22,7 +23,7 @@ public class Question {
     public Question() {
     }
 
-    public Question(String writer, String title, String contents) {
+    public Question(User writer, String title, String contents) {
         this.writer = writer;
         this.title = title;
         this.contents = contents;
@@ -36,11 +37,11 @@ public class Question {
         this.id = id;
     }
 
-    public String getWriter() {
+    public User getWriter() {
         return writer;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
@@ -61,14 +62,18 @@ public class Question {
     }
 
     public void update(Question question) {
-        if (!canUpdate(question)) return;
-        this.setTitle(question.getTitle());
-        this.setContents(question.getContents());
+        if (!matchId(question)) return;
+        if (!matchWriter(question.writer.getId())) return;
+        this.title = question.title;
+        this.contents = question.contents;
     }
 
-    private boolean canUpdate(Question question) {
-        if (!getId().equals(question.getId())) return false;
-        return true;
+    public boolean matchId(Question question) {
+        return id.equals(question.id);
+    }
+
+    public boolean matchWriter(Long id) {
+        return this.writer.matchId(id);
     }
 
     @Override

@@ -28,10 +28,34 @@ public class UserTest {
     }
 
     @Test
-    public void updateFailByPassword() {
-        User userTest = new User("sheep1500", "1233_fail", "ksy_test", "ksy_test@woowahan.com");
-        userTest.setId(1L);
+    public void updateFailById() {
+        User userTest = new User("sheep", "1233", "ksy_test", "ksy_test@woowahan.com");
         user.update(userTest);
         assertNotEquals(user, userTest);
+    }
+
+    @Test
+    public void updateFailByPassword() {
+        User userTest = new User("sheep1500", "1233_fail", "ksy_test", "ksy_test@woowahan.com");
+        user.update(userTest);
+        assertNotEquals(user, userTest);
+    }
+
+    @Test
+    public void matchId() {
+        assertEquals(true, user.matchId(1L));
+        assertEquals(false, user.matchId(-1L));
+    }
+
+    @Test
+    public void matchUserId() {
+        assertEquals(true, user.matchUserId("sheep1500"));
+        assertEquals(false, user.matchUserId("abc"));
+    }
+
+    @Test
+    public void matchPassword() {
+        assertEquals(true, user.matchPassword("1234"));
+        assertEquals(false, user.matchPassword("abc"));
     }
 }
