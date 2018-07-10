@@ -18,4 +18,9 @@ public class HomeController {
         model.addAttribute("questions", questionRepository.findAll());
         return "index";
     }
+
+    @GetMapping("/error")
+    public String showError() {
+        return "error";
+    }
 }

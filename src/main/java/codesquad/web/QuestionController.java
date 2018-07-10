@@ -1,15 +1,17 @@
 package codesquad.web;
 
+import codesquad.SessionUtil;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
+import codesquad.domain.User;
+import codesquad.dto.question.QuestionDto;
 import codesquad.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/questions")
@@ -17,10 +19,15 @@ public class QuestionController {
     @Autowired
     QuestionRepository questionRepository;
 
-    @PostMapping("/")
-    public String create(Question question) {
-        questionRepository.save(question);
+    @PostMapping("")
+    public String create(QuestionDto dto, HttpSession session) {
+        questionRepository.save(dto.toEntity(SessionUtil.getMaybeUser(session).orElseThrow(NotFoundException::new)));
         return "redirect:/";
+    }
+
+    @GetMapping("")
+    public String createQuestionForm() {
+        return "qna/form";
     }
 
     @GetMapping("/{id}")
@@ -36,15 +43,28 @@ public class QuestionController {
     }
 
     @PutMapping("/{id}")
-    public String updateQuestion(@PathVariable long id, String contents) {
+    public String updateQuestion(@PathVariable long id, String contents, HttpSession session) {
+        User loginedUser = SessionUtil.getMaybeUser(session).orElseThrow(NotFoundException::new);
         Question question = searchQuestion(id);
         question.setContents(contents);
+
+        if (!question.matchWriter(loginedUser)) {
+            throw new NotFoundException();
+        }
+
         questionRepository.save(question);
         return "redirect:/";
     }
 
     @DeleteMapping("/{id}")
-    public String deleteQuestion(@PathVariable long id) {
+    public String deleteQuestion(@PathVariable long id, HttpSession session) {
+        User loginedUser = SessionUtil.getMaybeUser(session).orElseThrow(NotFoundException::new);
+        Question question = searchQuestion(id);
+
+        if (!question.matchWriter(loginedUser)) {
+            throw new NotFoundException();
+        }
+
         questionRepository.deleteById(id);
         return "redirect:/";
     }
@@ -55,6 +75,6 @@ public class QuestionController {
 
     @ExceptionHandler(NotFoundException.class)
     public String handleUserNotFoundException() {
-        return "redirect:/";
+        return "redirect:/error";
     }
 }

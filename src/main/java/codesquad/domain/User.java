@@ -1,8 +1,10 @@
 package codesquad.domain;
 
 import codesquad.dto.user.UserUpdateDto;
+import codesquad.exception.NotFoundException;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 public class User {
@@ -50,10 +52,38 @@ public class User {
     }
 
     public void update(UserUpdateDto dto) {
-        if (password.equals(dto.getCurrentPassword())) {
-            email = dto.getEmail();
-            name = dto.getName();
-            password = dto.getPassword();
+        if (!matchPassword(dto.getCurrentPassword())) {
+            throw new NotFoundException();
         }
+
+        email = dto.getEmail();
+        name = dto.getName();
+        password = dto.getPassword();
+    }
+
+    public boolean matchPassword(String currentPassword) {
+        return password.equals(currentPassword);
+    }
+
+    public boolean matchId(long id) {
+        return this.id == id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) &&
+                Objects.equals(userId, user.userId) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, userId, password, name, email);
     }
 }
