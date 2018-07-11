@@ -13,19 +13,22 @@
                       <div class="article-header-thumb">
                           <img src="https://graph.facebook.com/v2.3/100000059371774/picture" class="article-author-thumb" alt="">
                       </div>
+                      {{#writer}}
                       <div class="article-header-text">
-                          <a href="/users/92/kimmunsu" class="article-author-name">{{writer}}</a>
+                          <a href="/users/92/kimmunsu" class="article-author-name">{{writer.name}}</a>
                           <a href="/questions/413" class="article-header-time" title="퍼머링크">
                               2015-12-30 01:47
                               <i class="icon-link"></i>
                           </a>
                       </div>
+                      {{/writer}}
                   </div>
                   <div class="article-doc">
                       {{contents}}
                   </div>
                   <div class="article-util">
                       <ul class="article-util-list">
+                          {{#isWriter}}
                           <li>
                               <a class="link-modify-article" href="/questions/updateForm/{{index}}">수정</a>
                           </li>
@@ -35,6 +38,7 @@
                                   <button class="link-delete-article" type="submit">삭제</button>
                               </form>
                           </li>
+                          {{/isWriter}}
                           <li>
                               <a class="link-modify-article" href="/index.html">목록</a>
                           </li>

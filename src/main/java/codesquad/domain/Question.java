@@ -10,13 +10,15 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int index;
 
-    @Column(length=30, nullable = false)
-    private String writer;
     @Column(nullable=false)
     private String title;
 
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
+
     @Lob
-    @Column(name = "CONTENTS", columnDefinition = "BLOB")
+    @Column(name = "contents", columnDefinition = "BLOB")
     private String contents;
 
     private Date date;
@@ -25,19 +27,11 @@ public class Question {
         date = new Date();
     }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public String getWriter() {
+    public User getWriter() {
         return writer;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
@@ -65,10 +59,17 @@ public class Question {
         this.index = index;
     }
 
-    public void updateQuestion(Question updateQuestion) {
-        setTitle(updateQuestion.getTitle());
-        setContents(updateQuestion.getContents());
-        setWriter(updateQuestion.getWriter());
-        setDate(updateQuestion.getDate());
+    public void setUser(User user) {
+        this.writer = user;
+    }
+
+    public void updateQuestion(Question updateQuestion, User currentUser) {
+        if (!writer.equalsUser(currentUser))
+            throw new IllegalArgumentException();
+
+        title = updateQuestion.title;
+        contents = updateQuestion.contents;
+        date = updateQuestion.date;
+
     }
 }

@@ -69,10 +69,29 @@ public class User {
         this.id = id;
     }
 
-    public void updateUser(User user) {
-        setUserId(user.getUserId());
-        setPassword(user.getPassword());
-        setName(user.getName());
-        setEmail(user.getEmail());
+
+
+    public void updateUser(User sessionedUser, User user) {
+        if(sessionUserValid(sessionedUser)) {
+            throw new IllegalArgumentException();
+        }
+
+        if(!password.equals(user.password)) {
+            throw new IllegalArgumentException();
+        }
+
+        setName(user.name);
+        setEmail(user.email);
+
+    }
+
+    public boolean sessionUserValid(User sessionedUser) {
+        return sessionedUser != null && !userId.equals(sessionedUser.userId);
+    }
+
+    public boolean equalsUser(User currentUser) {
+        if (currentUser == null)
+            return false;
+        return userId.equals(currentUser.userId);
     }
 }
