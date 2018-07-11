@@ -2,10 +2,10 @@
 <html lang="kr">
 <head>
     {{#block "header"}}
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta http-equiv="contents-type" contents="text/html; charset=UTF-8">
         <meta charset="utf-8">
         <title>SLiPP Java Web Programming</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="viewport" contents="width=device-width, initial-scale=1, maximum-scale=1">
         <link href="/css/bootstrap.min.css" rel="stylesheet">
         <!--[if lt IE 9]>
         <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -71,29 +71,29 @@
         <div class="collapse navbar-collapse" id="navbar-collapse2">
             <ul class="nav navbar-nav navbar-right">
                 <li class="active"><a href="/">Posts</a></li>
+                {{^sessionedUser}}
                 <li><a href="/user/login" role="button">로그인</a></li>
                 <li><a href="/user/form" role="button">회원가입</a></li>
-                <!--
-                <li><a href="#loginModal" role="button" data-toggle="modal">로그인</a></li>
-                <li><a href="#registerModal" role="button" data-toggle="modal">회원가입</a></li>
-                -->
-                <li><a href="#" role="button">로그아웃</a></li>
-                <li><a href="/user/updateForm" role="button">개인정보수정</a></li>
+                {{/sessionedUser}}
+                {{#sessionedUser}}
+                <li><a href="/users/logout" role="button">로그아웃</a></li>
+                <li><a href="/users/updateForm" role="button">개인정보수정</a></li>
+                {{/sessionedUser}}
             </ul>
         </div>
     </div>
 </div>
 {{/block}}
 
-{{#block "content"}}
+{{#block "contents"}}
 <!-- 들어갈 내용임 -->
 {{/block}}
 
 {{#block "footer"}}
     <!-- script references -->
-    <script src="js/jquery-2.2.0.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/scripts.js"></script>
+    <script src="/js/jquery-2.2.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/scripts.js"></script>
 {{/block}}
 </body>
 </html>

@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>error page</title>
-</head>
-<body>
-    Error Message : {{errorMsg}}
-</body>
-</html>
+{{#partial "contents"}}
+<div class="container" id="main">
+    <div class="col-md-12 col-sm-12 col-lg-12">
+        <div class="panel panel-default">
+            <div class="alert alert-danger" role="alert">{{errorMsg}}</div>
+        </div>
+    </div>
+</div>
+
+{{/partial}}
+{{> includes/base}}

@@ -7,9 +7,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class ExceptionHandlingController {
     @ExceptionHandler(InvalidLoginException.class)
-    public String passLoginHandler(Exception e, Model model) {
+    public String passLoginPage(Exception e, Model model) {
         model.addAttribute("errorMsg", e.getMessage());
         return "/user/login_failed";
     }
 
+    @ExceptionHandler(UnAuthorizedDeleteException.class)
+    public String passErrorPage(Exception e, Model model) {
+        model.addAttribute("errorMsg", e.getMessage());
+        return "/common/error";
+    }
 }

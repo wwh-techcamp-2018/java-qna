@@ -25,4 +25,8 @@ public class SessionUtil {
         return user.matchUserId(getUser(session).orElseThrow(() -> new InvalidLoginException("로그인하지 않았습니다.")).getUserId());
 
     }
+
+    public static void removeUser(HttpSession session) {
+        session.removeAttribute(USER_KEY);
+    }
 }
