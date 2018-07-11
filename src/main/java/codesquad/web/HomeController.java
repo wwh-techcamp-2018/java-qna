@@ -1,7 +1,6 @@
 package codesquad.web;
 
-import antlr.ASTNULLType;
-import codesquad.domain.QuestionRepository;
+import codesquad.domain.question.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +14,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String list(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findAllByDeletedFalse());
         return "index";
     }
 

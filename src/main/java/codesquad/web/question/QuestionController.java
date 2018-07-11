@@ -1,11 +1,12 @@
-package codesquad.web;
+package codesquad.web.question;
 
 import codesquad.SessionUtil;
-import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
-import codesquad.domain.User;
+import codesquad.domain.question.Question;
+import codesquad.domain.question.QuestionRepository;
+import codesquad.domain.user.User;
 import codesquad.dto.question.QuestionDto;
-import codesquad.exception.NotFoundException;
+import codesquad.exception.user.UserNotFoundException;
+import codesquad.exception.user.PermissionDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,7 +22,7 @@ public class QuestionController {
 
     @PostMapping("")
     public String create(QuestionDto dto, HttpSession session) {
-        questionRepository.save(dto.toEntity(SessionUtil.getMaybeUser(session).orElseThrow(NotFoundException::new)));
+        questionRepository.save(dto.toEntity(SessionUtil.getUser(session)));
         return "redirect:/";
     }
 
@@ -32,7 +33,9 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public String show(@PathVariable long id, Model model) {
-        model.addAttribute("question", searchQuestion(id));
+        Question question = searchQuestion(id);
+        model.addAttribute("question", question);
+        model.addAttribute("answer", question.getAnswers());
         return "/qna/show";
     }
 
@@ -44,12 +47,12 @@ public class QuestionController {
 
     @PutMapping("/{id}")
     public String updateQuestion(@PathVariable long id, String contents, HttpSession session) {
-        User loginedUser = SessionUtil.getMaybeUser(session).orElseThrow(NotFoundException::new);
+        User loginedUser = SessionUtil.getMaybeUser(session).orElseThrow(PermissionDeniedException::new);
         Question question = searchQuestion(id);
         question.setContents(contents);
 
         if (!question.matchWriter(loginedUser)) {
-            throw new NotFoundException();
+            throw new PermissionDeniedException();
         }
 
         questionRepository.save(question);
@@ -58,23 +61,16 @@ public class QuestionController {
 
     @DeleteMapping("/{id}")
     public String deleteQuestion(@PathVariable long id, HttpSession session) {
-        User loginedUser = SessionUtil.getMaybeUser(session).orElseThrow(NotFoundException::new);
+        User loginedUser = SessionUtil.getUser(session);
         Question question = searchQuestion(id);
 
-        if (!question.matchWriter(loginedUser)) {
-            throw new NotFoundException();
-        }
+        question.delete(loginedUser);
 
-        questionRepository.deleteById(id);
+        questionRepository.save(question);
         return "redirect:/";
     }
 
     private Question searchQuestion(long id) {
-        return questionRepository.findById(id).orElseThrow(NotFoundException::new);
-    }
-
-    @ExceptionHandler(NotFoundException.class)
-    public String handleUserNotFoundException() {
-        return "redirect:/error";
+        return questionRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 }

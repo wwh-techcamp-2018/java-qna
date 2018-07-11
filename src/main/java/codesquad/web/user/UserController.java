@@ -1,18 +1,17 @@
-package codesquad.web;
+package codesquad.web.user;
 
 import codesquad.SessionUtil;
-import codesquad.domain.User;
-import codesquad.domain.UserRepository;
+import codesquad.domain.user.User;
+import codesquad.domain.user.UserRepository;
 import codesquad.dto.user.UserRegisterDto;
 import codesquad.dto.user.UserUpdateDto;
-import codesquad.exception.NotFoundException;
+import codesquad.exception.user.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/users")
@@ -39,8 +38,8 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(String userId, String password, HttpSession session) {
-        User user = userRepository.findByUserId(userId).orElseThrow(NotFoundException::new);
-        if (!user.matchPassword(password)) { throw new NotFoundException(); }
+        User user = userRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+        if (!user.matchPassword(password)) { throw new UserNotFoundException(); }
 
         session.setAttribute("sessionedUser", user);
         return "redirect:/";
@@ -60,10 +59,10 @@ public class UserController {
 
     @PutMapping("/{id}")
     public String updateUser(@PathVariable long id, UserUpdateDto dto, HttpSession session) {
-        User loginedUser = SessionUtil.getMaybeUser(session).orElseThrow(NotFoundException::new);
+        User loginedUser = SessionUtil.getUser(session);
 
         if (!loginedUser.matchId(id)) {
-            throw new NotFoundException();
+            throw new UserNotFoundException();
         }
 
         User user = searchUser(loginedUser.getId());
@@ -74,11 +73,7 @@ public class UserController {
     }
 
     private User searchUser(long id) {
-        return userRepository.findById(id).orElseThrow(NotFoundException::new);
+        return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public String handleUserNotFoundException() {
-        return "redirect:/error";
-    }
 }

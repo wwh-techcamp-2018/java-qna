@@ -1,6 +1,6 @@
 package codesquad.dto.user;
 
-import codesquad.domain.User;
+import codesquad.domain.user.User;
 
 public class UserRegisterDto extends UserDto {
 
@@ -20,6 +20,6 @@ public class UserRegisterDto extends UserDto {
     }
 
     public User toEntity() {
-        return new User(userId, password, name, email);
+        return new User(null, userId, password, name, email);
     }
 }

@@ -1,7 +1,7 @@
 package codesquad.dto.question;
 
-import codesquad.domain.Question;
-import codesquad.domain.User;
+import codesquad.domain.question.Question;
+import codesquad.domain.user.User;
 
 public class QuestionDto {
     private String title;

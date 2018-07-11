@@ -1,7 +1,7 @@
-package codesquad.domain;
+package codesquad.domain.user;
 
 import codesquad.dto.user.UserUpdateDto;
-import codesquad.exception.NotFoundException;
+import codesquad.exception.user.UserNotFoundException;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -24,7 +24,8 @@ public class User {
     public User() {
     }
 
-    public User(String userId, String password, String name, String email) {
+    public User(Long id, String userId, String password, String name, String email) {
+        this.id = id;
         this.userId = userId;
         this.password = password;
         this.name = name;
@@ -53,7 +54,7 @@ public class User {
 
     public void update(UserUpdateDto dto) {
         if (!matchPassword(dto.getCurrentPassword())) {
-            throw new NotFoundException();
+            throw new UserNotFoundException();
         }
 
         email = dto.getEmail();

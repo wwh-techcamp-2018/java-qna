@@ -1,7 +1,5 @@
 package codesquad.dto.user;
 
-import codesquad.domain.User;
-
 public class UserUpdateDto extends UserDto {
     private String currentPassword;
 
