@@ -1,9 +1,9 @@
 package codesquad.domain;
 
-import org.springframework.data.repository.CrudRepository;
+
+import codesquad.Exception.RedirectException;
 
 import javax.persistence.*;
-import java.util.Optional;
 
 @Entity
 public class Question {
@@ -12,13 +12,19 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String writer;
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
+
     @Column(nullable = false)
     private String password;
+
     @Column(nullable = false)
     private String title;
+
     private String contents;
+
+    public Question() {}
 
     public String getPassword() {
         return password;
@@ -36,14 +42,11 @@ public class Question {
         this.id = id;
     }
 
-    public Question() {
-    }
-
-    public String getWriter() {
+    public User getWriter() {
         return writer;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
@@ -63,18 +66,22 @@ public class Question {
         this.contents = contents;
     }
 
-    public boolean update(CrudRepository repository){
-        Optional<Question> questionOptional = repository.findById(this.id);
-        questionOptional.orElseThrow(() -> new IllegalArgumentException());
-        if(isCorrectPassword(questionOptional.get().getPassword())){
-            repository.save(this);
-            return true;
-        }
-        return false;
+    public boolean isCorrectPassword(Question question) {
+        return this.password.equals(question.getPassword());
     }
 
-    public boolean isCorrectPassword(String password){
-        return this.password.equals(password);
+    public void invalidateWriter(User user) {
+        if (!writer.equals(user)) {
+            throw new RedirectException("권한이 없습니다.");
+        }
+    }
+
+    public void update(Question question) {
+        if (!isCorrectPassword(question)) {
+            throw new RedirectException("잘못된 비밀번호입니다.");
+        }
+        this.title = question.title;
+        this.contents = question.contents;
     }
 }
 

@@ -1,21 +1,28 @@
 package codesquad.web;
 
-import org.springframework.data.repository.CrudRepository;
+import codesquad.Exception.RedirectException;
+import codesquad.domain.User;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
+import javax.servlet.http.HttpSession;
+
 
 public class WebUtil {
-    public static HttpServletResponse alert(String message, HttpServletResponse response) {
-        try {
-            response.setContentType("text/html; charset=UTF-8");
-            PrintWriter out = response.getWriter();
-            out.println("<script>alert('" + message + "'); history.go(-1);</script>");
-            out.flush();
-        } catch (Exception e) {
-
+    private static boolean isAlive(HttpSession session) {
+        Object maybeUser = session.getAttribute("sessionedUser");
+        if (maybeUser == null) {
+            return false;
         }
-        return response;
+        return true;
     }
 
+    public static void invalidateSession(HttpSession session) {
+        if (!isAlive(session)) {
+            throw new RedirectException("", "/user/login");
+        }
+    }
+
+    public static User fromSession(HttpSession session) {
+        return (User) session.getAttribute("sessionedUser");
+    }
 }

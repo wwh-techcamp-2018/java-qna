@@ -1,13 +1,15 @@
 package codesquad.web;
 
-import codesquad.domain.User;
-import codesquad.domain.UserRepository;
+import codesquad.Exception.RedirectException;
+import codesquad.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.swing.text.html.Option;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/users")
@@ -15,9 +17,23 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @PostMapping("/login")
+    public String login(User user, HttpSession session) {
+        Optional<User> maybeUser = userRepository.findByUserId(user.getUserId());
+        maybeUser.filter(u -> u.isCorrectPassword(user))
+                .orElseThrow(() -> new RedirectException("회원 정보를 확인해주세요."));
+        session.setAttribute("sessionedUser", maybeUser.get());
+        return "redirect:/";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.removeAttribute("sessionedUser");
+        return "redirect:/";
+    }
+
     @PostMapping("")
     public String create(User user) {
-        //users.add(user);
         userRepository.save(user);
         return "redirect:/users";
     }
@@ -36,45 +52,25 @@ public class UserController {
     }
 
     @GetMapping("/{id}/form")
-    public String findUser(@PathVariable Long id, Model model) {
-        User user = userRepository.findById(id).get();
+    public String findUser(@PathVariable long id, HttpSession session, Model model) {
+        WebUtil.invalidateSession(session);
+        User user = WebUtil.fromSession(session);
+        user.invalidateUserId(id);
         model.addAttribute("user", user);
         return "/user/updateForm";
     }
 
     @PutMapping("")
-    public String updateUser(User user, HttpServletResponse response) {
-        if (user.update(userRepository)) {
-            return "redirect:/users";
-        }
-        WebUtil.alert("비밀번호가 틀렸습니다.", response);
-        return null;
+    public String updateUser(User user, Model model, HttpSession session) {
+        User original = findUserWithId(WebUtil.fromSession(session).getId(), userRepository);
+        original.update(user);
+        userRepository.save(original);
+        return "redirect:/users";
     }
 
-    //
-//    @PostMapping("/users")
-//    public ModelAndView create2(String userId,
-//                                String password,
-//                                String name,
-//                                String email, Model model){
-//        User user = new User(userId,password,name,email);
-//        users.add(user);
-//        ModelAndView mav = new ModelAndView("/user/list");
-//        mav.addObject("users",users);
-//        return mav;
-//    }
-//
-
-
-    //    @PostMapping("/users")
-//    public String create(String userId,
-//                                String password,
-//                                String name,
-//                                String email, Model model){
-//        User user = new User(userId,password,name,email);
-//        users.add(user);
-//
-//        model.addAttribute("users",users);
-//        return "/user/list";
-//    }
+    static User findUserWithId(Long id, UserRepository userRepository) {
+        Optional<User> userOptional = userRepository.findById(id);
+        userOptional.orElseThrow(() -> new RedirectException("잘못된 회원입니다."));
+        return userOptional.get();
+    }
 }

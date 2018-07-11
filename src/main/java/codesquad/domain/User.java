@@ -1,10 +1,11 @@
 package codesquad.domain;
 
 
-import org.springframework.data.repository.CrudRepository;
+import codesquad.Exception.RedirectException;
 
 import javax.persistence.*;
-import java.util.Optional;
+import java.util.Objects;
+
 
 @Entity
 public class User {
@@ -14,7 +15,6 @@ public class User {
 
     @Column(length = 30, unique = true, nullable = false)
     private String userId;
-
 
     private String password;
     private String name;
@@ -67,21 +67,40 @@ public class User {
     }
 
     public String getEmail() {
-
         return email;
     }
 
-    public boolean update(CrudRepository repository){
-        Optional<User> userOptional = repository.findById(this.id);
-        userOptional.orElseThrow(()-> new IllegalArgumentException());
-        if(this.isCorrectPassword(userOptional.get().getPassword())) {
-            repository.save(this);
-            return true;
-        }
-        return false;
+    public boolean isCorrectPassword(User user) {
+        return this.password.equals(user.password);
     }
 
-    public boolean isCorrectPassword(String password){
-        return this.password.equals(password);
+    public void invalidateUserId(long id) {
+        if (this.id != id)
+            throw new RedirectException("접근권한이 없습니다.");
     }
+
+    public void update(User user) {
+        if (!isCorrectPassword(user))
+            throw new RedirectException("비밀번호가 틀렸습니다.");
+        this.name = user.name;
+        this.email = user.email;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) &&
+                Objects.equals(userId, user.userId) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userId, password, name, email);
+    }
+
 }
