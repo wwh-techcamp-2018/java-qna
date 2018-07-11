@@ -11,6 +11,7 @@ import codesquad.util.AuthenticationUtil;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class UserController {
 
 
     @PostMapping("/login")
+    @Transactional
     public String login(String userId, String password, HttpSession session) {
         User user = findUserOrThrow(userId);
         user.matchPassword(password);
@@ -37,6 +39,7 @@ public class UserController {
     }
 
     @PostMapping("")
+    @Transactional
     public String create(UserDto dto) {
         userRepository.save(dto.toEntity());
         return "redirect:/users";
@@ -55,6 +58,7 @@ public class UserController {
     }
 
     @PutMapping("/me")
+    @Transactional
     public String updateUser(UserDto dto, HttpSession session) {
         User user = AuthenticationUtil.getUserFromSession(session).orElseThrow(UnauthorizedException::new);
         if (user.update(dto)) {

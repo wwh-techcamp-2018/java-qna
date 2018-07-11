@@ -12,6 +12,7 @@ import codesquad.util.AuthenticationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ public class QuestionController {
     private QuestionRepository questionRepository;
 
     @PostMapping("/questions")
+    @Transactional
     public String question(QuestionDto dto, HttpSession session) {
         User user = AuthenticationUtil.getUserFromSession(session).orElseThrow(UnauthorizedException::new);
         questionRepository.save(dto.toEntity(user));
@@ -34,7 +36,7 @@ public class QuestionController {
 
     @GetMapping("/")
     public String showList(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findAllByDeletedIsFalse());
         return "index";
     }
 
@@ -45,6 +47,7 @@ public class QuestionController {
     }
 
     @PutMapping("/questions/{id}")
+    @Transactional
     public String update(QuestionDto dto, @PathVariable Long id, HttpSession session) {
         User user = AuthenticationUtil.getUserFromSession(session).orElseThrow(ForbiddenException::new);
         Question question = findQuestionOrThrow(id);
@@ -54,13 +57,11 @@ public class QuestionController {
     }
 
     @DeleteMapping("/questions/{id}")
+    @Transactional
     public String delete(@PathVariable Long id, HttpSession session) {
         User user = AuthenticationUtil.getUserFromSession(session).orElseThrow(UnauthorizedException::new);
         Question question = findQuestionOrThrow(id);
-        if (!question.matchWriter(user)) {
-            throw new UnauthorizedException();
-        }
-        questionRepository.delete(question);
+        question.delete(user);
         return "redirect:/";
     }
 
