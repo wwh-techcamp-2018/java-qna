@@ -2,6 +2,8 @@ package codesquad.domain;
 
 import org.springframework.data.repository.CrudRepository;
 
-public interface QuestionRepository extends CrudRepository<Question, Integer> {
+import java.util.List;
 
+public interface QuestionRepository extends CrudRepository<Question, Integer> {
+    public List<Question> findAllByDeletedFalse();
 }

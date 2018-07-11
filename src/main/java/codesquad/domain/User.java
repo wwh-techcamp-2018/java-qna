@@ -92,6 +92,6 @@ public class User {
     public boolean equalsUser(User currentUser) {
         if (currentUser == null)
             return false;
-        return userId.equals(currentUser.userId);
+        return id.equals(currentUser.id);
     }
 }

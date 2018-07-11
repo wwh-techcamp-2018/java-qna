@@ -1,14 +1,17 @@
 package codesquad.domain;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Question {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int index;
+    private int id;
 
     @Column(nullable=false)
     private String title;
@@ -22,6 +25,10 @@ public class Question {
     private String contents;
 
     private Date date;
+
+    @Column()
+    @ColumnDefault(value = "false")
+    private boolean deleted;
 
     public Question(){
         date = new Date();
@@ -51,12 +58,39 @@ public class Question {
         this.contents = contents;
     }
 
-    public long getIndex() {
-        return index;
+    public int getId() {
+        return id;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public void setDeleted() {
+        this.deleted = true;
+    }
+
+    public boolean isDeletable(User currentUser, List<Answer> answers) {
+
+        if(!writer.equalsUser(currentUser)) {
+            return false;
+        }
+
+        for (Answer answer : answers) {
+
+            if (!answer.isWriter(writer)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void setUser(User user) {

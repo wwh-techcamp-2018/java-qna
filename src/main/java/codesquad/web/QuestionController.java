@@ -1,8 +1,7 @@
 package codesquad.web;
 
-import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
-import codesquad.domain.User;
+import codesquad.domain.*;
+import codesquad.dto.QnAObject;
 import codesquad.util.SessionUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,12 +9,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
 public class QuestionController {
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
 
     @PostMapping("/questions")
@@ -41,7 +44,7 @@ public class QuestionController {
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findAllByDeletedFalse());
         return "/qna/index";
     }
 
@@ -52,9 +55,10 @@ public class QuestionController {
             return "redirect:/";
 
         User questionUser = question.getWriter();
-        model.addAttribute("writer", questionUser);
-        model.addAttribute("isWriter", questionUser.equalsUser(SessionUtility.getCurrentUser(session)));
-        model.addAttribute("question", question);
+        List<Answer> answers = answerRepository.findAllByDeletedFalseAndQuestionId(index);
+        QnAObject dtoObject = new QnAObject(questionUser, questionUser.equalsUser(SessionUtility.getCurrentUser(session)),
+                question, answers, answers.size());
+        model.addAttribute("dtoObject", dtoObject);
         return "/qna/show";
 
     }
@@ -66,13 +70,41 @@ public class QuestionController {
             return "redirect:/";
         }
 
-        User questionUser = maybeQuestion.get().getWriter();
         User currentUser = SessionUtility.getCurrentUser(session);
-        if (!questionUser.equalsUser(currentUser)) {
+
+        Question question = maybeQuestion.get();
+        if(!question.isDeletable(currentUser, answerRepository.findAllByDeletedFalseAndQuestionId(index)))
+            return "redirect:/questions/error";
+        question.setDeleted();
+        questionRepository.save(question);
+        return "redirect:/";
+    }
+
+    @DeleteMapping("/questions/{questionId}/answers/{id}")
+    public String deleteAnswer(@PathVariable int questionId, @PathVariable int id, HttpSession session){
+        User currentUser = SessionUtility.getCurrentUser(session);
+        Answer answer = answerRepository.findById(id).get();
+        if(!answer.isWriter(currentUser)) {
             return "redirect:/questions/error";
         }
-        questionRepository.deleteById(index);
-        return "redirect:/";
+        answer.setDeleted();
+        answerRepository.save(answer);
+        return "redirect:/questions/" + questionId;
+
+
+    }
+
+    @PostMapping("/questions/{id}")
+    public String addAnswer(@PathVariable int id, HttpSession session, Answer answer) {
+        User currentUser = SessionUtility.getCurrentUser(session);
+        if(currentUser == null) {
+            return "redirect:/questions/error";
+        }
+
+        answer.setQuestion(questionRepository.findById(id).get());
+        answer.setWriter(currentUser);
+        answerRepository.save(answer);
+        return "redirect:/questions/" + id;
     }
 
     @GetMapping("/questions/error")
