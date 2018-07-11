@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(IllegalArgumentException.class)
     public String error404(Model model, IllegalArgumentException e) {
         log.info("exception message : {}", e.getMessage());

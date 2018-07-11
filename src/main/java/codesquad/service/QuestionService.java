@@ -25,7 +25,8 @@ public class QuestionService {
         question.delete(loginUser);
     }
 
-    public void create(Question question) {
+    public void create(Question question, User loginUser) {
+        question.create(loginUser);
         questionRepository.save(question);
     }
 

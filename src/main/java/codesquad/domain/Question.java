@@ -1,12 +1,16 @@
 package codesquad.domain;
 
 import codesquad.exception.UnAuthorizedException;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
+@Slf4j
 @Entity
 @Where(clause = "deleted != 'true'") // soft delete
 public class Question {
@@ -27,7 +31,10 @@ public class Question {
     private String enrollTime;
 
     @Column(name = "deleted")
-    private Boolean isDeleted;
+    private boolean isDeleted;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.PERSIST)
+    private List<Answer> answers = new ArrayList<>();
 
     // 디폴트 생성자 필수
     public Question() {
@@ -43,7 +50,6 @@ public class Question {
     public void create(User loginUser) {
         this.writer = loginUser;
         this.enrollTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        this.isDeleted = false;
     }
 
     public void update(User loginUser, Question updatedQuestion) {
@@ -54,11 +60,28 @@ public class Question {
         this.contents = updatedQuestion.getContents();
     }
 
+    public void createAnswer(User loginUser, Answer newAnswer) {
+        newAnswer.create(loginUser, this);
+        this.answers.add(newAnswer);
+    }
+
+    public void deleteAnswer(User loginUser, Answer answer) {
+        answer.delete(loginUser);
+    }
+
     public void delete(User loginUser) {
         if (loginUser == null || !loginUser.matchUserId(writer.getUserId())) {
             throw new UnAuthorizedException();
         }
+
+        for (Answer answer : answers) {
+            deleteAnswer(loginUser, answer);
+        }
         isDeleted = true;
+    }
+
+    public boolean isMatchByUserId(User loginUser) {
+        return (loginUser != null && loginUser.matchUserId(this.writer.getUserId()));
     }
 
     public Long getId() {
@@ -107,5 +130,9 @@ public class Question {
 
     public void setDeleted(Boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public List<Answer> getAnswers() {
+        return answers;
     }
 }
