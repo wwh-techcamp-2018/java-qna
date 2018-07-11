@@ -2,12 +2,20 @@ package codesquad.web;
 
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
+import codesquad.domain.User;
+import codesquad.exception.AuthorizationException;
+import codesquad.exception.NotFoundException;
+import codesquad.exception.NotLoginException;
+import codesquad.session.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
+
 @Controller
+@RequestMapping("/questions")
 public class QuestionController {
 
     @Autowired
@@ -16,47 +24,61 @@ public class QuestionController {
     public QuestionController() {
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public String list(Model model) {
         model.addAttribute("questions", qRepository.findAll());
-        return "index";
+        return "qna/list";
     }
 
-    @GetMapping("/questions/{id}")
+    @GetMapping("/{id}")
     public String detail(@PathVariable long id, Model model) {
         model.addAttribute("question", qRepository.findById(id).get());
         return "qna/show";
     }
 
-    @GetMapping("/questions/write")
-    public String writeForm() {
+    @GetMapping("/write")
+    public String writeForm(HttpSession session) {
+        Session.getUser(session);
         return "qna/form";
     }
 
-    @GetMapping("/questions/{id}/modify")
-    public String modifyForm(@PathVariable long id, Model model) {
-        model.addAttribute("question", qRepository.findById(id).get());
+    @GetMapping("/{id}/modify")
+    public String modifyForm(@PathVariable long id, Model model, HttpSession session) {
+        User user = Session.getUser(session);
+        Question q = qRepository.findById(id).get();
+        q.validateWriter(user);
+        model.addAttribute("question", q);
         return "qna/modifyForm";
     }
 
-    @PostMapping("/questions")
-    public String create(Question q, Model model) {
+    @PostMapping("")
+    public String create(Question q, Model model, HttpSession session) {
+        User user = Session.getUser(session);
+        q.setWriter(user);
         qRepository.save(q);
-        return "redirect:/";
+        return "redirect:/questions";
     }
 
-    @PutMapping("/questions/{id}")
-    public String modify(@PathVariable long id, Question q, Model model) {
-        qRepository.findById(id).get();
-        q.setId(id);
-        qRepository.save(q);
-        return "redirect:/";
+    @PutMapping("/{id}")
+    public String modify(@PathVariable long id, Question q, HttpSession session) {
+        User user = Session.getUser(session);
+        Question maybeQuestion = qRepository.findById(id).filter(u -> u.validateWriter(user)).orElseThrow(NotFoundException::new);
+        qRepository.save(maybeQuestion.modify(q));
+        return "redirect:/questions";
     }
 
-    @DeleteMapping("/questions/{id}")
-    public String delete(@PathVariable long id) {
+    @DeleteMapping("/{id}")
+    public String delete(@PathVariable long id, HttpSession session) {
+        User user = Session.getUser(session);
+        Question q = qRepository.findById(id).get();
+        q.validateWriter(user);
         qRepository.deleteById(id);
-        return "redirect:/";
+        return "redirect:/questions";
+    }
+
+    @ExceptionHandler({NotLoginException.class, NotFoundException.class, AuthorizationException.class})
+    public String handleNotLogin() {
+        return "redirect:/users/login";
     }
 
 }

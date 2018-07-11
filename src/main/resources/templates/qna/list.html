@@ -1,0 +1,44 @@
+{{#partial "content" }}
+      <div class="panel panel-default qna-list">
+          <ul class="list">
+              {{#questions}}
+              <li>
+                  <div class="wrap">
+                      <div class="main">
+                          <strong class="subject">
+                              <a href="/questions/{{id}}">{{title}}</a>
+                          </strong>
+                          <div class="auth-info">
+                              <i class="icon-add-comment"></i>
+                              <span class="time">{{time}}</span>
+                          </div>
+                          <p>작성자: {{writer.name}}</p>
+                          <div class="reply" title="댓글">
+                              <i class="icon-reply"></i>
+                              <span class="point">{{@index_1}}</span>
+                          </div>
+                      </div>
+                  </div>
+              </li>
+              {{/questions}}
+          </ul>
+          <div class="row">
+              <div class="col-md-3"></div>
+              <div class="col-md-6 text-center">
+                  <ul class="pagination center-block" style="display:inline-block;">
+                      <li><a href="#">«</a></li>
+                      <li><a href="#">1</a></li>
+                      <li><a href="#">2</a></li>
+                      <li><a href="#">3</a></li>
+                      <li><a href="#">4</a></li>
+                      <li><a href="#">5</a></li>
+                      <li><a href="#">»</a></li>
+                </ul>
+              </div>
+              <div class="col-md-3 qna-write">
+                  <a href="/questions/write" class="btn btn-primary pull-right" role="button">질문하기</a>
+              </div>
+          </div>
+        </div>
+{{/partial}}
+{{> base}}

@@ -1,9 +1,8 @@
 package codesquad.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import codesquad.exception.AuthorizationException;
+
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
@@ -13,20 +12,37 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Date time;
-    private String writer;
+
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+    private User writer;
+
+    @Column(length = 30, nullable = false)
     private String title;
+
+    @Lob
+    @Column(nullable = false)
     private String contents;
 
     public Question() {
         this.time = new Date();
     }
 
-    public Question(String writer, String title, String contents, Date time) {
+    public Question(User writer, String title, String contents, Date time) {
         this.writer = writer;
         this.title = title;
         this.contents = contents;
         this.time = new Date();
+    }
+
+    public Question modify(Question q) {
+        this.setWriter(q.writer);
+        this.setTitle(q.title);
+        this.setContents(q.contents);
+
+        return this;
     }
 
     public Long getId() {
@@ -45,11 +61,11 @@ public class Question {
         this.time = time;
     }
 
-    public String getWriter() {
-        return writer;
+    public User getWriter() {
+        return this.writer;
     }
 
-    public void setWriter(String writer) {
+    public void setWriter(User writer) {
         this.writer = writer;
     }
 
@@ -67,5 +83,12 @@ public class Question {
 
     public void setContents(String contents) {
         this.contents = contents;
+    }
+
+    public boolean validateWriter(User user) {
+        if(!this.getWriter().equals(user)){
+            throw new AuthorizationException();
+        }
+        return true;
     }
 }
