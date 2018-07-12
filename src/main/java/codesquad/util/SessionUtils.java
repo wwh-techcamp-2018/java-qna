@@ -24,13 +24,19 @@ public class SessionUtils {
         return (User)session.getAttribute(SESSION_USER_KEY);
     }
 
-    public void checkSameUser(HttpSession session, Long id) throws Exception {
+    public void checkSameUser(HttpSession session, Long id) throws UnAuthorizedUserException {
         if(!getUserFromSession(session).isSameId(id)) {
             throw new UnAuthorizedUserException();
         }
     }
 
-    public void checkLogin(HttpSession session) throws Exception {
+    public void checkSameUser(User loginUser, Long id) throws UnAuthorizedUserException {
+        if(!loginUser.isSameId(id)) {
+            throw new UnAuthorizedUserException();
+        }
+    }
+
+    public void checkLogin(HttpSession session) throws UnidentifiedUserException {
         if (getUserFromSession(session) == null) {
             throw new UnidentifiedUserException();
         }

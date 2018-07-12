@@ -1,8 +1,14 @@
 package codesquad.domain;
 
+import codesquad.exception.UnDeletableQuestionException;
+import codesquad.util.DateUtils;
+import codesquad.util.SessionUtils;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Where;
+
 import javax.persistence.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -20,6 +26,13 @@ public class Question {
     private String contents;
     @Column(nullable = false)
     private String time;
+    @Column
+    private boolean deleted;
+
+    @OneToMany(mappedBy = "question")
+    @Where(clause = "deleted = false")
+    @Cascade(value = org.hibernate.annotations.CascadeType.REMOVE)
+    private List<Answer> answers = new ArrayList<>();
 
     public Question() {
     }
@@ -28,6 +41,19 @@ public class Question {
         this.writer = writer;
         this.title = title;
         this.contents = contents;
+        this.deleted = false;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public boolean getDeleted() {
+        return this.deleted;
     }
 
     public Long getId() {
@@ -55,9 +81,7 @@ public class Question {
     }
 
     public void setTime() {
-        long currentTime = System.currentTimeMillis();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        this.time = format.format(new Date(currentTime));
+        this.time = DateUtils.getCurrentTime();
     }
 
     public void updateTime(String time) {
@@ -76,11 +100,45 @@ public class Question {
         return contents;
     }
 
+    public List<Answer> getAnswers() {
+        return answers;
+    }
+
+    public void addAnswers(Answer answer) {
+        this.answers.add(answer);
+    }
+
+    public Long getWriterId() {
+        return writer.getId();
+    }
+
     public Question update(Question modifiedQuestion) {
         setTitle(modifiedQuestion.getTitle());
         setContents(modifiedQuestion.getContents());
 
         return this;
+    }
+
+    // TODO 질문을 삭제할 수 있는지에 대한 여부를 여기서 확인하기
+    // TODO 삭제를 담당하는 경우의 수가 많으니까 단위 테스트를 추가하라
+    public void delete(User loginUser) {
+        if(!isDeletable(loginUser)) {
+            throw new UnDeletableQuestionException();
+        }
+
+        setDeleted(true);
+        for (Answer answer : answers) {
+            answer.delete();
+        }
+    }
+
+    private boolean isDeletable(User user) {
+        SessionUtils.getInstance().checkSameUser(user, getWriterId());
+        boolean flag = true;
+        for (Answer answer : answers) {
+            flag = (flag && answer.isDeletable(user));
+        }
+        return flag;
     }
 
     @Override
@@ -109,9 +167,5 @@ public class Question {
                 ", contents='" + contents + '\'' +
                 ", time='" + time + '\'' +
                 '}';
-    }
-
-    public Long getWriterId() {
-        return writer.getId();
     }
 }

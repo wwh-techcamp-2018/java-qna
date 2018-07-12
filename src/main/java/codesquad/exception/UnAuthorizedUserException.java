@@ -1,4 +1,5 @@
 package codesquad.exception;
 
-public class UnAuthorizedUserException extends Exception {
+public class UnAuthorizedUserException extends RuntimeException {
+
 }
