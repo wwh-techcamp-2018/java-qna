@@ -1,6 +1,7 @@
 package codesquad.web;
 
 import codesquad.Exception.RedirectException;
+import codesquad.domain.Question;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;

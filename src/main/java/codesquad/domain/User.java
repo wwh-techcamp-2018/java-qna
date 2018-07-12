@@ -74,7 +74,7 @@ public class User {
         return this.password.equals(user.password);
     }
 
-    public void invalidateUserId(long id) {
+    public void validateUserId(long id) {
         if (this.id != id)
             throw new RedirectException("접근권한이 없습니다.");
     }
@@ -102,5 +102,4 @@ public class User {
     public int hashCode() {
         return Objects.hash(id, userId, password, name, email);
     }
-
 }

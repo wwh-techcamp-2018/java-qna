@@ -3,6 +3,7 @@ package codesquad.web;
 import codesquad.Exception.RedirectException;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
+import codesquad.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,42 +21,42 @@ public class QuestionController {
 
     @GetMapping("")
     public String list(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findAllPresent());
         return "/index";
     }
 
     @GetMapping("/new")
     public String createForm(HttpSession session) {
-        WebUtil.invalidateSession(session);
+        SessionUtil.validateSession(session);
         return "redirect:/qna/form";
     }
 
     @PostMapping("")
     public String create(Question question, HttpSession session) {
-        WebUtil.invalidateSession(session);
-        question.setWriter(WebUtil.fromSession(session));
+        SessionUtil.validateSession(session);
+        question.setWriter(SessionUtil.getSessionUser(session));
         questionRepository.save(question);
         return "redirect:/questions";
     }
 
     @GetMapping("/{id}")
     public String show(@PathVariable Long id, Model model) {
-        model.addAttribute("questions", findQuestionWithId(id, this.questionRepository));
+        model.addAttribute("question", findById(id, this.questionRepository));
         return "/qna/show";
     }
 
     @GetMapping("/{id}/update")
     public String findQuestion(@PathVariable Long id, HttpSession session, Model model) {
-        WebUtil.invalidateSession(session);
-        Question question = findQuestionWithId(id, this.questionRepository);
-        question.invalidateWriter(WebUtil.fromSession(session));
+        SessionUtil.validateSession(session);
+        Question question = findById(id, this.questionRepository);
+        question.validateWriter(SessionUtil.getSessionUser(session));
         model.addAttribute("question", question);
         return "/qna/updateForm";
     }
 
     @PutMapping("")
     public String update(Question question, Model model, HttpSession session) {
-        Question original = findQuestionWithId(question.getId(), questionRepository);
+        Question original = findById(question.getId(), questionRepository);
         original.update(question);
         questionRepository.save(original);
         return "redirect:/questions/" + question.getId();
@@ -63,14 +64,15 @@ public class QuestionController {
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id, HttpSession session, Model model) {
-        WebUtil.invalidateSession(session);
-        Question question = findQuestionWithId(id, this.questionRepository);
-        question.invalidateWriter(WebUtil.fromSession(session));
-        questionRepository.deleteById(id);
+        SessionUtil.validateSession(session);
+        Question question = findById(id, questionRepository);
+        question.validateWriter(SessionUtil.getSessionUser(session));
+        question.delete();
+        questionRepository.save(question);
         return "redirect:/";
     }
 
-    static Question findQuestionWithId(Long id, QuestionRepository questionRepository) {
+    public static Question findById(Long id, QuestionRepository questionRepository) {
         Optional<Question> questionOptional = questionRepository.findById(id);
         questionOptional.orElseThrow(() -> new IllegalArgumentException("No question found with id " + id));
         return questionOptional.get();

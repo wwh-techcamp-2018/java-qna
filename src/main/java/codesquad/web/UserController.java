@@ -2,13 +2,13 @@ package codesquad.web;
 
 import codesquad.Exception.RedirectException;
 import codesquad.domain.*;
+import codesquad.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 @Controller
@@ -53,16 +53,16 @@ public class UserController {
 
     @GetMapping("/{id}/form")
     public String findUser(@PathVariable long id, HttpSession session, Model model) {
-        WebUtil.invalidateSession(session);
-        User user = WebUtil.fromSession(session);
-        user.invalidateUserId(id);
+        SessionUtil.validateSession(session);
+        User user = SessionUtil.getSessionUser(session);
+        user.validateUserId(id);
         model.addAttribute("user", user);
         return "/user/updateForm";
     }
 
     @PutMapping("")
     public String updateUser(User user, Model model, HttpSession session) {
-        User original = findUserWithId(WebUtil.fromSession(session).getId(), userRepository);
+        User original = findUserWithId(SessionUtil.getSessionUser(session).getId(), userRepository);
         original.update(user);
         userRepository.save(original);
         return "redirect:/users";
