@@ -1,5 +1,8 @@
 package codesquad.domain;
 
+import codesquad.exception.ForbiddenException;
+import codesquad.exception.InvalidPasswordException;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -26,10 +29,8 @@ public class User {
 
     }
 
-    public User(String userId,
-                String password,
-                String name,
-                String email) {
+    public User(Long id, String userId, String password, String name, String email) {
+        this.id = id;
         this.userId = userId;
         this.password = password;
         this.name = name;
@@ -44,57 +45,65 @@ public class User {
         this.id = id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getUserId() {
         return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getPassword() {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {
         return email;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void validatePassword(String password) {
+        if (!isPasswordMatch(password)) {
+            throw new InvalidPasswordException();
+        }
+    }
+
     public void update(User newUser) {
+        if (!isPasswordMatch(newUser)) {
+            throw new InvalidPasswordException("/users/" + newUser.getId() + "/form");
+        }
         this.name = newUser.name;
         this.email = newUser.email;
     }
 
-    public boolean checkPassword(String password){
-        if(this.password.equals(password)) return true;
-        return false;
+    public boolean isPasswordMatch(String password) {
+        return this.password.equals(password);
     }
 
-    public boolean checkPassword(User user){
-        if(this.password.equals(user.getPassword())) return true;
-        return false;
+    public boolean isPasswordMatch(User user) {
+        return isPasswordMatch(user.password);
     }
 
-    public boolean checkUserId(String userId){
-        if(this.userId.equals(userId)) return true;
-        return false;
+    public void checkId(Long id) {
+        if (!this.id.equals(id))
+            throw new ForbiddenException();
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -102,11 +111,14 @@ public class User {
         User user = (User) o;
         return Objects.equals(id, user.id) &&
                 Objects.equals(userId, user.userId) &&
-                Objects.equals(password, user.password);
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, userId, password);
+        return Objects.hash(id, userId, password, name, email);
     }
+
 }

@@ -74,7 +74,7 @@
                 -->
                 {{#sessionedId}}
                 <li><a href="/users/logout" role="button">로그아웃</a></li>
-                <li><a href="/users/update" role="button">개인정보수정</a></li>
+                <li><a href="/users/{{sessionedId}}/form" role="button">개인정보수정</a></li>
                 {{/sessionedId}}
             </ul>
         </div>

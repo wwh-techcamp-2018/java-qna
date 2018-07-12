@@ -1,6 +1,6 @@
 package codesquad.web;
 
-import codesquad.domain.QuestionRepository;
+import codesquad.repository.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,8 +16,13 @@ public class MainController {
 
     @GetMapping
     public String index(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findAllByIsDeletedFalse());
         return "/index";
+    }
+
+    @GetMapping("/forbidden")
+    public String forbidden() {
+        return "/error/forbidden";
     }
 
 }

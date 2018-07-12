@@ -1,17 +1,23 @@
 package codesquad.web;
 
+import codesquad.domain.Answer;
 import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
+import codesquad.exception.QuestionNotFoundException;
+import codesquad.exception.UserNotFoundException;
+import codesquad.exception.UserNotInSessionException;
+import codesquad.repository.AnswerRepository;
+import codesquad.repository.QuestionRepository;
 import codesquad.domain.User;
-import codesquad.domain.UserRepository;
+import codesquad.repository.UserRepository;
 import codesquad.util.SessionHandler;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/questions")
@@ -21,39 +27,23 @@ public class QuestionController {
     private QuestionRepository questionRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private AnswerRepository answerRepository;
 
-    @PostMapping
-    public String create(Question question,HttpSession session) {
-        User user = userRepository.findById(SessionHandler.getId(session)).get();
-        question.setWriter(user);
-        questionRepository.save(question);
-        return "redirect:/";
-    }
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findAllByIsDeletedFalse());
         return "/index";
     }
 
-    @GetMapping("/{id}")
-    public String show(@PathVariable Long id, Model model) {
-        model.addAttribute("question", questionRepository.findById(id).get());
-        return "/qna/show";
-    }
-
-    @GetMapping("/{id}/form")
-    public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
-        User user = userRepository.findById(SessionHandler.getId(session)).get();
-        Question question = questionRepository.findById(id).get();
-        if(question.checkWriter(user)){
-            question.setWriter(user);
-            model.addAttribute("question", question);
-            return "/qna/updateForm";
-        }
-        return "/qna/update_failed";
-
+    @PostMapping
+    public String create(Question question, HttpSession session) {
+        User user = getUser(session);
+        question.setWriter(user);
+        questionRepository.save(question);
+        return "redirect:/";
     }
 
     @GetMapping("/form")
@@ -61,25 +51,78 @@ public class QuestionController {
         return "/qna/form";
     }
 
+    @GetMapping("/{id}")
+    public String show(@PathVariable Long id, Model model) {
+        List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(id);
+        model.addAttribute("question", questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new));
+        model.addAttribute("answers", answers);
+        model.addAttribute("num", answers.size());
+
+        return "/qna/show";
+    }
+
     @PutMapping("/{id}")
-    public String update(@PathVariable Long id, Question newQuestion) {
-        Question question = questionRepository.findById(id).get();
-        question.update(newQuestion);
+    public String update(@PathVariable Long id, Question newQuestion, HttpSession session) {
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new);
+        question.updateByUser(getUser(session), newQuestion);
         questionRepository.save(question);
         return "redirect:/";
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id,HttpSession session) {
-        User user = userRepository.findById(SessionHandler.getId(session)).get();
-        Question question = questionRepository.findById(id).get();
-        if(question.checkWriter(user)){
-            questionRepository.deleteById(id);
-            return "redirect:/";
+    public String delete(@PathVariable Long id, HttpSession session) {
+        User user = getUser(session);
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new);
+        List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(id);
+        deleteQuestion(user, question, answers);
+        deleteAnswerByQuestionId(user, id);
+        return "redirect:/";
+    }
 
-        }
-        return "/qna/update_failed";
+    private void deleteAnswerByQuestionId(User user, Long questionId) {
+        List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(questionId)
+                .stream()
+                .map(answer -> answer.deleteByUser(user))
+                .collect(Collectors.toList());
+        answerRepository.saveAll(answers);
+    }
 
+    private void deleteQuestion(User user, Question question, List<Answer> answers) {
+        question.deleteByUser(user, answers);
+        questionRepository.save(question);
+    }
+
+    @GetMapping("/{id}/form")
+    public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
+        User user = getUser(session);
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new);
+        question.validateWriter(user);
+        model.addAttribute("question", question);
+        return "/qna/updateForm";
+    }
+
+    @PostMapping("/{questionId}/answers")
+    public String createAnswer(@PathVariable Long questionId, Answer answer, HttpSession session) {
+        User user = getUser(session);
+        Question question = questionRepository.findByIdAndIsDeletedFalse(questionId).orElseThrow(QuestionNotFoundException::new);
+        answer.setWriter(user);
+        answer.setQuestion(question);
+        answerRepository.save(answer);
+        return "redirect:/questions/{questionId}";
+    }
+
+    @DeleteMapping("/{id}/answers/{answerId}")
+    public String deleteAnswer(@PathVariable("id") Long id, @PathVariable("answerId") Long answerId, HttpSession session) {
+        User user = getUser(session);
+        Answer answer = answerRepository.findById(answerId).orElseThrow(IllegalAccessError::new);
+        answer.deleteByUser(user);
+        answerRepository.save(answer);
+        return "redirect:/questions/{id}";
+    }
+
+    private User getUser(HttpSession session) {
+        Long uid = SessionHandler.getId(session);
+        return userRepository.findById(uid).orElseThrow(UserNotFoundException::new);
     }
 
 }
