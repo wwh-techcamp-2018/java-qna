@@ -2,12 +2,9 @@ package codesquad.web;
 
 import codesquad.domain.Question;
 import codesquad.domain.User;
-import codesquad.exception.UserNotMatchException;
+import codesquad.exception.*;
 import codesquad.repository.QuestionRepository;
 import codesquad.repository.UserRepository;
-import codesquad.exception.QuestionNotFoundException;
-import codesquad.exception.UserNotFoundException;
-import codesquad.exception.UserSessionNotFoundException;
 import codesquad.utility.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,7 +30,7 @@ public class QuestionController {
     }
 
     @GetMapping("/form")
-    public String question(HttpSession httpSession){
+    public String question(HttpSession httpSession) {
         Authentication.needLogin(httpSession);
         return "/qna/form";
     }
@@ -86,10 +83,8 @@ public class QuestionController {
     public String delete(@PathVariable long id, HttpSession httpSession) {
         Long sessionId = Authentication.getId(httpSession).orElseThrow(UserSessionNotFoundException::new);
         Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
-        if (!question.matchWriter(sessionId))
-            throw new IllegalAccessError();
-
-        questionRepository.delete(question);
+        question.delete(sessionId);
+        questionRepository.save(question);
         return "redirect:/";
     }
 }

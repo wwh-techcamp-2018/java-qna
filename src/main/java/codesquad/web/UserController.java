@@ -82,6 +82,14 @@ public class UserController {
         if (!user.matchPassword(password)) {
             throw new InvalidPasswordException();
         }
+
+//        // sample !!!! 위 코드를 람다식 형태로 !
+//        {
+//            User user = userRepository.findById(userId)
+//                    .filter(u -> u.matchPassword(password))
+//                    .orElseThrow(InvalidPasswordException::new);
+//        }
+
         Authentication.login(httpSession, user.getId());
         return "redirect:/";
     }

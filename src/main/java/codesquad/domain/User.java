@@ -1,7 +1,5 @@
 package codesquad.domain;
 
-import codesquad.exception.InvalidPasswordException;
-
 import javax.persistence.*;
 import java.util.Objects;
 
