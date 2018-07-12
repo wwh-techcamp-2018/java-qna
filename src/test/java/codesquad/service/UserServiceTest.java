@@ -32,7 +32,6 @@ public class UserServiceTest {
                     new User((long) 1, "junsu", "1234", "junsu", "aa@aa"),
                     new User((long) 2, "intae", "1234", "intae", "bb@bb")
             );
-
         }
 
         @Override
@@ -41,8 +40,10 @@ public class UserServiceTest {
         }
 
         @Override
-        public User findByUserIdAndEmail(String userId, String email) {
-            throw new UnsupportedOperationException();
+        public Optional<User> findByUserIdAndPassword(String userId, String password) {
+            return users.stream()
+                    .filter(user -> user.isSamePassword(password) && user.getUserId().equals(userId))
+                    .findFirst();
         }
 
         @Override
@@ -106,7 +107,8 @@ public class UserServiceTest {
     @Test
     public void findById() {
         User expectedUser = new User((long) 1, "junsu", "1234", "junsu", "aa@aa");
-        assertThat(userService.findById((long) 1)).isEqualTo(expectedUser);
+        assertThat(userService.findUserById((long) 1)).isEqualTo(expectedUser);
     }
+
 
 }

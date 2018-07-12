@@ -1,5 +1,8 @@
 package codesquad.domain;
 
+import codesquad.exception.UserFailureException;
+import codesquad.exception.UserLoginNeedException;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -19,7 +22,6 @@ public class User {
 
 
     public User() {
-
     }
 
     public User(Long id, String userId, String password, String name, String email) {
@@ -72,22 +74,19 @@ public class User {
         this.id = id;
     }
 
-    public boolean isSameUser(User user) {
-        if(user == null)
-            return false;
-        return this.id.equals(user.getId());
-    }
-
-    public boolean isSamePassword(String password) {
-        return this.password.equals(password);
-    }
-
-    public void updateUser(User updated) {
+    public void update(User updated, User sessionUser) {
+        if (!equals(sessionUser))
+            throw new UserFailureException();
         if (!isSamePassword(updated.password))
-            return;
-        this.name = updated.name;
-        this.password = updated.password;
-        this.email = updated.email;
+            throw new UserFailureException();
+
+        name = updated.name;
+        password = updated.password;
+        email = updated.email;
+    }
+
+    public boolean isSamePassword(String inputPassword) {
+        return password.equals(inputPassword);
     }
 
     @Override

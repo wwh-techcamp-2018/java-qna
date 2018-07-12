@@ -1,11 +1,16 @@
 package codesquad.service;
 
+import codesquad.domain.Answer;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
-import codesquad.exception.QuestionModifyFailException;
+import codesquad.exception.AnswerFailureException;
+import codesquad.exception.QuestionFailureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class QuestionService {
@@ -17,33 +22,56 @@ public class QuestionService {
         this.questionRepository = questionRepository;
     }
 
-    public Iterable<Question> findAll() {
-        return questionRepository.findAll();
+    public Iterable<Question> findQuestions() {
+        return questionRepository.findByDeletedFalse();
     }
 
-    public void save(Question question) {
-        if (question.getTitle().isEmpty())
-            return;
+    public void createQuestion(Question question, User user) {
+        question.setWriter(user);
+        if (question.isTitleEmpty())
+            throw new QuestionFailureException();
         questionRepository.save(question);
     }
 
-    public Question findById(Long id) {
-        return questionRepository.findById(id).get();
+    public Question findQuestionById(Long id) {
+        Optional<Question> maybeQuestion = questionRepository.findById(id);
+        if (!maybeQuestion.isPresent())
+            throw new QuestionFailureException();
+
+        return maybeQuestion.get();
     }
 
-    public void deleteById(Long id, User user) throws QuestionModifyFailException {
-        Question question = findById(id);
-        if(!question.isOwner(user))
-            throw new QuestionModifyFailException("자신의 글만 삭제할 수 있습니다.");
-
-        questionRepository.deleteById(id);
+    public void deleteQuestionById(Long id, User user) {
+        Question question = findQuestionById(id);
+        question.delete(user);
+        questionRepository.save(question);
     }
 
-    public void updateById(Long id, Question updateQuestion, User user) throws QuestionModifyFailException {
-        Question question = findById(id);
-        if(!question.updateQuestion(updateQuestion,user))
-            throw new QuestionModifyFailException("자신의 글만 수정할 수 있습니다.");
+    public void updateQuestionById(Long id, Question updateQuestion, User user) {
+        Question question = findQuestionById(id);
+        question.update(updateQuestion, user);
 
         questionRepository.save(question);
     }
+
+    public void addAnswer(User user, Long questionId, Answer answer) {
+        Question question = findQuestionById(questionId);
+        question.addAnswer(user, answer);
+        questionRepository.save(question);
+    }
+
+
+    public List<Answer> findAnswersById(Long id) {
+        return findQuestionById(id).getAnswers();
+    }
+
+    public void deleteAnswer(User user, long questionId, long answerId) {
+        Question question = findQuestionById(questionId);
+
+        Answer answer = question.getAnswer(answerId);
+        answer.delete(user);
+        questionRepository.save(question);
+    }
+
+
 }

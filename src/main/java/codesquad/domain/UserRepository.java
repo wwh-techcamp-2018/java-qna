@@ -8,7 +8,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     Optional<User> findByUserId(String userId);
 
-
-    User findByUserIdAndEmail(String userId, String email);
+    Optional<User> findByUserIdAndPassword(String userId, String password);
 
 }
