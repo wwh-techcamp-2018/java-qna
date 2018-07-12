@@ -1,15 +1,14 @@
 package codesquad.web;
 
 import codesquad.domain.User;
-import codesquad.domain.UserRepository;
+import codesquad.repository.UserRepository;
+import codesquad.utils.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -29,11 +28,7 @@ public class UserController {
     @GetMapping("")
     public String list(Model model, HttpSession session) {
         User sessionedUser = SessionUtil.getUser(session);
-        if (sessionedUser == null) {
-            model.addAttribute("users", userRepository.findAll());
-            return "/user/list";
-        }
-        model.addAttribute("users", userRepository.findByIdNot(sessionedUser.getId()));
+        model.addAttribute("users", userRepository.findAll());
         return "/user/list";
     }
 

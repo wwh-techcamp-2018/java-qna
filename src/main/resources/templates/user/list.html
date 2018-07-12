@@ -14,17 +14,6 @@
                 </tr>
                 </thead>
                 <tbody>
-                {{#sessionedUser}}
-                <tr>
-                    <th scope="row"></th>
-                    <td><a href="/users/{{userId}}">{{userId}}</a></td>
-                    <td> {{name}}</td>
-                    <td> {{email}}</td>
-                    <td>
-                        <a href="/users/{{userId}}/form" class="btn btn-success" role="button">수정</a>
-                    </td>
-                </tr>
-                {{/sessionedUser}}
                 {{#users}}
                 <tr>
                     <th scope="row"> {{@index_1}}</th>

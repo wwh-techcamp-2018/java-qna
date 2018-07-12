@@ -1,12 +1,15 @@
 package codesquad.web;
 
 import codesquad.domain.*;
+import codesquad.exception.NullQuestionException;
+import codesquad.exception.UserNotMatchException;
+import codesquad.repository.QuestionRepository;
+import codesquad.utils.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
@@ -27,7 +30,9 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public String show(@PathVariable Long id, Model model) {
-        model.addAttribute("question", findById(id));
+        Question question = findById(id);
+        model.addAttribute("question", question);
+        model.addAttribute("notDeletedAnswers", question.listNotDeleted());
         return "/qna/show";
     }
 
@@ -38,7 +43,7 @@ public class QuestionController {
     }
 
     @PutMapping("/{id}")
-    public String update(@PathVariable Long id, Question question, HttpSession session, Model model) throws UserNotMatchException {
+    public String update(@PathVariable Long id, Question question, HttpSession session, Model model) {
         User user = SessionUtil.getUser(session);
         question.setWriter(user);
         Question questionOrigin = findById(id);
@@ -48,11 +53,11 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id, HttpSession session, Model model) throws UserNotMatchException {
+    public String delete(@PathVariable Long id, HttpSession session, Model model) {
         User user = SessionUtil.getUser(session);
         Question questionOrigin = findById(id);
-        questionOrigin.isWriter(user);
-        questionRepository.delete(questionOrigin);
+        questionOrigin.deleteQuestionAndAnswers(user);
+        questionRepository.save(questionOrigin);
         return "redirect:/";
     }
 
@@ -64,7 +69,7 @@ public class QuestionController {
 
     public Question findById(Long id) {
         Optional<Question> questionOptional = questionRepository.findById(id);
-        questionOptional.orElseThrow(() -> new IllegalArgumentException());
+        questionOptional.orElseThrow(() -> new NullQuestionException());
         return questionOptional.get();
     }
 }
