@@ -1,5 +1,6 @@
 package codesquad.web;
 
+import codesquad.domain.Answer;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
@@ -26,13 +27,15 @@ public class QuestionController {
 
     @GetMapping("")
     public String list(Model model) {
-        model.addAttribute("questions", qRepository.findAll());
+        model.addAttribute("questions", qRepository.findByDeletedFalse());
         return "qna/list";
     }
 
     @GetMapping("/{id}")
     public String detail(@PathVariable long id, Model model) {
-        model.addAttribute("question", qRepository.findById(id).get());
+        Question q = qRepository.findById(id).orElseThrow(NotFoundException::new);
+        model.addAttribute("question", q);
+        model.addAttribute("answerSize", q.getAnswers().size());
         return "qna/show";
     }
 
@@ -70,9 +73,10 @@ public class QuestionController {
     @DeleteMapping("/{id}")
     public String delete(@PathVariable long id, HttpSession session) {
         User user = Session.getUser(session);
-        Question q = qRepository.findById(id).get();
-        q.validateWriter(user);
-        qRepository.deleteById(id);
+        Question q = qRepository.findById(id).filter(u -> u.validateWriter(user)).orElseThrow(NotFoundException::new);
+        if(q.isDeletable())
+            deleteQuestion(q);
+
         return "redirect:/questions";
     }
 
@@ -81,4 +85,11 @@ public class QuestionController {
         return "redirect:/users/login";
     }
 
+    private void deleteQuestion(Question q) {
+        for (Answer a : q.getAnswers()) {
+            a.setDeleted(true);
+        }
+        q.setDeleted(true);
+        qRepository.save(q);
+    }
 }

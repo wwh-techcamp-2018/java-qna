@@ -1,9 +1,11 @@
 package codesquad.domain;
 
 import codesquad.exception.AuthorizationException;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Question {
@@ -25,6 +27,15 @@ public class Question {
     @Lob
     @Column(nullable = false)
     private String contents;
+
+
+    @Where(clause = "deleted = false")
+    @OrderBy("id ASC")
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<Answer> answers;
+
+    @Column
+    private boolean deleted = false;
 
     public Question() {
         this.time = new Date();
@@ -81,8 +92,24 @@ public class Question {
         return contents;
     }
 
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
     public void setContents(String contents) {
         this.contents = contents;
+    }
+
+    public List<Answer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<Answer> answers) {
+        this.answers = answers;
     }
 
     public boolean validateWriter(User user) {
@@ -90,5 +117,18 @@ public class Question {
             throw new AuthorizationException();
         }
         return true;
+    }
+
+    public boolean isDeletable() {
+        if(isRemainYoursAnswers())
+           throw new AuthorizationException();
+
+        return true;
+    }
+
+    private boolean isRemainYoursAnswers() {
+        return this.getAnswers().stream()
+                .filter(t -> !t.validateWriter(this.getWriter()))
+                .anyMatch(Answer::isDeleted);
     }
 }
