@@ -1,6 +1,6 @@
-package codesquad.dto;
+package codesquad.dto.user;
 
-import codesquad.domain.User;
+import codesquad.domain.user.User;
 
 public class UserDto {
     private String userId;

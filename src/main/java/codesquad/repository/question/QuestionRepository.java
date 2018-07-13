@@ -1,10 +1,9 @@
-package codesquad.repository;
+package codesquad.repository.question;
 
-import codesquad.domain.Question;
+import codesquad.domain.question.Question;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface QuestionRepository extends CrudRepository<Question, Long> {
     List<Question> findAllByDeletedIsFalse();

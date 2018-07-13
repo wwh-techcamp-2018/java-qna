@@ -1,7 +1,10 @@
 package codesquad.domain;
 
-import codesquad.dto.QuestionDto;
-import codesquad.exception.ForbiddenException;
+import codesquad.domain.question.Answer;
+import codesquad.domain.question.Question;
+import codesquad.domain.user.User;
+import codesquad.dto.question.QuestionDto;
+import codesquad.exception.user.ForbiddenException;
 import org.junit.Before;
 import org.junit.Test;
 

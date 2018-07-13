@@ -1,8 +1,9 @@
-package codesquad.domain;
+package codesquad.domain.question;
 
-import codesquad.dto.QuestionDto;
-import codesquad.exception.ForbiddenException;
-import codesquad.exception.UnauthorizedException;
+import codesquad.domain.user.User;
+import codesquad.dto.question.QuestionDto;
+import codesquad.exception.user.ForbiddenException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Where;
 
@@ -25,6 +26,7 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Where(clause = "deleted = false")
+    @JsonIgnore
     private List<Answer> answers = new ArrayList<>();
 
     @Column(length = 50, nullable = false)

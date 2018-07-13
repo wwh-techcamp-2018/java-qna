@@ -1,7 +1,8 @@
 package codesquad.domain;
 
-import codesquad.dto.UserDto;
-import codesquad.exception.PasswordMismatchException;
+import codesquad.domain.user.User;
+import codesquad.dto.user.UserDto;
+import codesquad.exception.user.PasswordMismatchException;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,14 +1,11 @@
-package codesquad.web;
+package codesquad.web.user;
 
-import codesquad.domain.User;
-import codesquad.dto.UserDto;
-import codesquad.exception.PasswordMismatchException;
-import codesquad.exception.RedirectableException;
-import codesquad.exception.UnauthorizedException;
-import codesquad.exception.UserNotFoundException;
-import codesquad.repository.UserRepository;
+import codesquad.domain.user.User;
+import codesquad.dto.user.UserDto;
+import codesquad.exception.user.UnauthorizedException;
+import codesquad.exception.user.UserNotFoundException;
+import codesquad.repository.user.UserRepository;
 import codesquad.util.AuthenticationUtil;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,7 +57,7 @@ public class UserController {
     @PutMapping("/me")
     @Transactional
     public String updateUser(UserDto dto, HttpSession session) {
-        User user = AuthenticationUtil.getUserFromSession(session).orElseThrow(UnauthorizedException::new);
+        User user = AuthenticationUtil.getMaybeUserFromSession(session).orElseThrow(UnauthorizedException::new);
         if (user.update(dto)) {
             userRepository.save(user);
         }
@@ -69,13 +66,8 @@ public class UserController {
 
     @GetMapping("/me/form")
     public String openUpdateForm(Model model, HttpSession session) {
-        model.addAttribute("user", AuthenticationUtil.getUserFromSession(session));
+        model.addAttribute("user", AuthenticationUtil.getMaybeUserFromSession(session));
         return "/user/updateForm";
-    }
-
-    @ExceptionHandler(RedirectableException.class)
-    public String handleRedirectableException(RedirectableException exception) {
-        return exception.getRedirectUrl();
     }
 
     private User findUserOrThrow(Long id) {

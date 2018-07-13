@@ -1,4 +1,6 @@
-package codesquad.exception;
+package codesquad.exception.user;
+
+import codesquad.exception.RedirectableException;
 
 public class UnauthorizedException extends RedirectableException {
     public UnauthorizedException() {

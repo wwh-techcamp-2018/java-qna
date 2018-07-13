@@ -1,5 +1,7 @@
 package codesquad.domain;
 
+import codesquad.domain.question.Answer;
+import codesquad.domain.user.User;
 import org.junit.Before;
 import org.junit.Test;
 

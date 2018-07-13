@@ -1,7 +1,7 @@
-package codesquad.domain;
+package codesquad.domain.user;
 
-import codesquad.dto.UserDto;
-import codesquad.exception.PasswordMismatchException;
+import codesquad.dto.user.UserDto;
+import codesquad.exception.user.PasswordMismatchException;
 
 import javax.persistence.*;
 import java.util.Objects;

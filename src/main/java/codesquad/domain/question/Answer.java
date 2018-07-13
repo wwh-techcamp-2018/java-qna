@@ -1,6 +1,7 @@
-package codesquad.domain;
+package codesquad.domain.question;
 
-import codesquad.exception.ForbiddenException;
+import codesquad.domain.user.User;
+import codesquad.exception.user.ForbiddenException;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -56,6 +57,10 @@ public class Answer {
 
     public User getWriter() {
         return writer;
+    }
+
+    public Question getQuestion() {
+        return question;
     }
 
     public void setQuestion(Question question) {

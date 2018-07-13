@@ -1,4 +1,6 @@
-package codesquad.exception;
+package codesquad.exception.user;
+
+import codesquad.exception.RedirectableException;
 
 public class ForbiddenException extends RedirectableException {
 

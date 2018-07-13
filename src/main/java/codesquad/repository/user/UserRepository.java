@@ -1,6 +1,6 @@
-package codesquad.repository;
+package codesquad.repository.user;
 
-import codesquad.domain.User;
+import codesquad.domain.user.User;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
