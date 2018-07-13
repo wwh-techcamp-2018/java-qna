@@ -32,6 +32,7 @@
                             <li>
                                 <form class="form-delete" action="/questions/{{id}}" method="POST">
                                     <input type="hidden" name="_method" value="DELETE">
+
                                     <button class="link-delete-article" type="submit">삭제</button>
                                 </form>
                             </li>
@@ -44,50 +45,15 @@
                 </article>
                 <div class="qna-comment">
                     <div class="qna-comment-slipp">
-
                         <p class="qna-comment-count"><strong>2</strong>개의 의견</p>
                         <div class="qna-comment-slipp-articles">
-                            {{#answers}}
-                            {{#unless deleted}}
-                            <article class="article" id="{{writer.userId}}">
-                                <div class="article-header">
-                                    <div class="article-header-thumb">
-                                        <img src="https://graph.facebook.com/v2.3/1324855987/picture"
-                                             class="article-author-thumb" alt="">
-                                    </div>
-                                    <div class="article-header-text">
-                                        <a href="/users/1/자바지기" class="article-author-name">{{writer.name}}</a>
-                                        <a href="#answer-1434" class="article-header-time" title="퍼머링크">
-                                            2016-01-12 14:06
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="article-doc comment-doc">
-                                    <p>{{contents}}</p>
-                                </div>
-                                <div class="article-util">
-                                    <ul class="article-util-list">
-                                        <li>
-                                            <a class="link-modify-article"
-                                               href="/questions/413/answers/1405/form">수정</a>
-                                        </li>
-                                        <li>
-                                            <form class="delete-answer-form" action="/questions/{{../id}}/answers/{{id}}"
-                                                  method="POST">
-                                                <input type="hidden" name="_method" value="DELETE">
-                                                <button type="submit" class="delete-answer-button">삭제</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </article>
-                            {{/unless}}
-                            {{/answers}}
-                            <form name="answer" class="submit-write" action="/questions/{{id}}/answers" method="post">
+
+                            <form name="answer" class="submit-write" action="/api/questions/{{id}}/answers" method="post">
                                 <div class="form-group" style="padding:14px;">
-                                    <textarea name="contents" class="form-control" placeholder="Update your status"></textarea>
+                                    <input type="hidden" name="questionId" value="{{id}}" id="questionId" />
+                                    <textarea name="contents" class="form-control" id="answerContent" placeholder="Update your status"></textarea>
                                 </div>
-                                <input type="submit" class="btn btn-success pull-right" value="답변하기"/>
+                                <input type="submit" class="btn btn-success pull-right" id="submitAnswer" value="답변하기"/>
                                 <div class="clearfix"/>
                             </form>
                         </div>
