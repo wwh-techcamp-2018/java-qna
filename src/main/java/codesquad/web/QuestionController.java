@@ -101,25 +101,6 @@ public class QuestionController {
         return "/qna/updateForm";
     }
 
-    @PostMapping("/{questionId}/answers")
-    public String createAnswer(@PathVariable Long questionId, Answer answer, HttpSession session) {
-        User user = getUser(session);
-        Question question = questionRepository.findByIdAndIsDeletedFalse(questionId).orElseThrow(QuestionNotFoundException::new);
-        answer.setWriter(user);
-        answer.setQuestion(question);
-        answerRepository.save(answer);
-        return "redirect:/questions/{questionId}";
-    }
-
-    @DeleteMapping("/{id}/answers/{answerId}")
-    public String deleteAnswer(@PathVariable("id") Long id, @PathVariable("answerId") Long answerId, HttpSession session) {
-        User user = getUser(session);
-        Answer answer = answerRepository.findById(answerId).orElseThrow(IllegalAccessError::new);
-        answer.deleteByUser(user);
-        answerRepository.save(answer);
-        return "redirect:/questions/{id}";
-    }
-
     private User getUser(HttpSession session) {
         Long uid = SessionHandler.getId(session);
         return userRepository.findById(uid).orElseThrow(UserNotFoundException::new);
