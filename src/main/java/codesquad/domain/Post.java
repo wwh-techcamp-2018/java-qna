@@ -21,6 +21,11 @@ public abstract class Post {
     public Post() {
     }
 
+    public Post(User user, String contents){
+        this.writer = user;
+        this.contents = contents;
+    }
+
     public Post(boolean deleted) {
         this.deleted = deleted;
     }

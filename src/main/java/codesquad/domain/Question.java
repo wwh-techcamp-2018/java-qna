@@ -2,6 +2,7 @@ package codesquad.domain;
 
 import codesquad.exception.NullAnswerException;
 import codesquad.exception.UserNotMatchException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -16,6 +17,7 @@ public class Question extends Post {
     private String title;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Answer> answers = new ArrayList<>();
 
     public Question() {

@@ -13,6 +13,11 @@ public class Answer extends Post {
     public Answer() {
     }
 
+    public Answer(User user, AnswerDto answerDto, Question question) {
+        super(user, answerDto.getContents());
+        this.question = question;
+    }
+
     public Answer(boolean deleted) {
         super(deleted);
     }
