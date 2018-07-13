@@ -8,6 +8,7 @@ import codesquad.dto.user.UserUpdateDto;
 import codesquad.exception.user.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ public class UserController {
     }
 
     @PostMapping("")
+    @Transactional
     public String create(UserRegisterDto dto) {
         userRepository.save(dto.toEntity());
         return "redirect:/users";
@@ -37,6 +39,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
+    @Transactional
     public String login(String userId, String password, HttpSession session) {
         User user = userRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
         if (!user.matchPassword(password)) { throw new UserNotFoundException(); }
@@ -58,6 +61,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @Transactional
     public String updateUser(@PathVariable long id, UserUpdateDto dto, HttpSession session) {
         User loginedUser = SessionUtil.getUser(session);
 

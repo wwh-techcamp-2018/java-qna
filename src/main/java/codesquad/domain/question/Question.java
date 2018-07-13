@@ -3,6 +3,7 @@ package codesquad.domain.question;
 import codesquad.domain.user.User;
 import codesquad.exception.user.PermissionDeniedException;
 import codesquad.exception.user.UserNotFoundException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -24,6 +25,7 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.PERSIST)
     @Where(clause = "deleted = false")
+    @JsonIgnore
     private List<Answer> answers = new ArrayList<>();
 
     @Lob
@@ -96,17 +98,9 @@ public class Question {
             throw new UserNotFoundException();
         }
         for (Answer answer : answers) {
-            checkAnswerCouldDelete(answer, user);
-        }
-        for (Answer answer : answers) {
             answer.delete(user);
         }
         deleted = true;
     }
 
-    private void checkAnswerCouldDelete(Answer answer, User user) {
-        if (!answer.couldDelete(user)) {
-            throw new PermissionDeniedException();
-        }
-    }
 }

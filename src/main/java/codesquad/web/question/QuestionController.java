@@ -9,6 +9,7 @@ import codesquad.exception.user.UserNotFoundException;
 import codesquad.exception.user.PermissionDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ public class QuestionController {
     QuestionRepository questionRepository;
 
     @PostMapping("")
+    @Transactional
     public String create(QuestionDto dto, HttpSession session) {
         questionRepository.save(dto.toEntity(SessionUtil.getUser(session)));
         return "redirect:/";
@@ -46,6 +48,7 @@ public class QuestionController {
     }
 
     @PutMapping("/{id}")
+    @Transactional
     public String updateQuestion(@PathVariable long id, String contents, HttpSession session) {
         User loginedUser = SessionUtil.getMaybeUser(session).orElseThrow(PermissionDeniedException::new);
         Question question = searchQuestion(id);
@@ -60,6 +63,7 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public String deleteQuestion(@PathVariable long id, HttpSession session) {
         User loginedUser = SessionUtil.getUser(session);
         Question question = searchQuestion(id);

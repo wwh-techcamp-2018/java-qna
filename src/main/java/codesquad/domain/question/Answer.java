@@ -2,8 +2,11 @@ package codesquad.domain.question;
 
 import codesquad.domain.user.User;
 import codesquad.exception.user.PermissionDeniedException;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Answer {
@@ -22,13 +25,22 @@ public class Answer {
     @Column(nullable = false)
     private boolean deleted = false;
 
+    @CreationTimestamp
+    private LocalDateTime createdDate;
+
     public Answer(Question question, User writer, String contents) {
+        this();
         this.question = question;
         this.writer = writer;
         this.contents = contents;
     }
 
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
     public Answer() {
+        this.createdDate = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -79,9 +91,5 @@ public class Answer {
 
     public boolean getDeleted() {
         return deleted;
-    }
-
-    public boolean couldDelete(User user) {
-        return deleted || matchWriter(user);
     }
 }
