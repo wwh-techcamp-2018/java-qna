@@ -1,89 +1,70 @@
 package codesquad.web;
 
-import codesquad.domain.User;
-import codesquad.domain.UserRepository;
+import codesquad.domain.*;
+import codesquad.service.CustomErrorMessage;
+import codesquad.service.CustomException;
+import codesquad.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/users")
 public class UserController {
-    //private Map<String, User> users = new HashMap<String, User>();
-    
+    static final String SESSION_KEY = "sessionedUser";
+
     @Autowired
-    private UserRepository userRepository;
+    UserService userService;
 
-//    @PostMapping("")
-//    public String create(String userId,
-//                         String password,
-//                         String name,
-//                         String email, Model model){
-//        User user = new User(userId, password, name, email);
-//        users.add(user);
-//        model.addAttribute("users", users);
-//        return "/user/list";
-//    }
-
-//    //Setter 메소드 만든 후 개선
-//    @PostMapping("")
-//    public String create(User user, Model model){
-//        users.add(user);
-//        model.addAttribute("users", users);
-//        return "/user/list";
-//    }
-
-    // 한가지 일만 하도록 메소드 분리
     @PostMapping
-    public String create(User user){
-        userRepository.save(user);
+    public String create(User user) {
+        userService.saveUser(user);
         return "redirect:/users";
     }
 
     @GetMapping
-    public String list(Model model){
-        model.addAttribute("users", userRepository.findAll());
+    public String list(Model model) {
+        model.addAttribute("users", userService.getUserList());
         return "/user/list";
     }
 
     @GetMapping("/{userId}")
     public String show(@PathVariable String userId, Model model) {
-        model.addAttribute("user", userRepository.findByUserId(userId));
+        model.addAttribute("user", userService.getUserByUserId(userId));
         return "/user/profile";
     }
+
     @GetMapping("/{userId}/form")
-    public String update(@PathVariable String userId, Model model) {
-        model.addAttribute("user", userRepository.findByUserId(userId));
+    public String update(@PathVariable String userId, Model model, HttpSession session) {
+        User targetUser = userService.getUserByUserId(userId);
+        User sessionedUser = userService.convertObjectToUser(session.getAttribute(SESSION_KEY));
+
+        if(!sessionedUser.matchUserId(targetUser))
+            throw new CustomException(CustomErrorMessage.NOT_AUTHORIZED);
+
+        model.addAttribute("user", targetUser);
         return "/user/updateForm";
     }
-    @PostMapping("/{userId}/form")
-    public String updateUser(User user) {
-        User targetUser = userRepository.findByUserId(user.getUserId());
-        user.setId(targetUser.getId());
-        userRepository.save(user);
+
+    @PutMapping("/{userId}")
+    public String updateUser(User user, @PathVariable String userId) {
+        userService.updateUser(user, userId);
         return "redirect:/users";
     }
 
-    // 예전버전에서의 사용법
-//    @PostMapping("/users")
-//    public ModelAndView create(String userId,
-//                               String password,
-//                               String name,
-//                               String email){
-//        User user = new User(userId, password, name, email);
-//        users.add(user);
-//        ModelAndView mav = new ModelAndView("user/list");
-//        mav.addObject("users", users);
-//        return mav;
-//    }
+    @PostMapping("/login")
+    public String login(String userId, String password, HttpSession session) {
+        User user = userService.getUserByUserIdAndPassword(userId, password);
+        session.setAttribute(SESSION_KEY, user);
+        return "redirect:/";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session){
+        session.removeAttribute(SESSION_KEY);
+        return "redirect:/";
+    }
 }

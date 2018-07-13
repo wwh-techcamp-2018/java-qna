@@ -1,64 +1,90 @@
 package codesquad.web;
 
-import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
-import jdk.nashorn.internal.runtime.QuotedStringTokenizer;
+import codesquad.domain.*;
+import codesquad.repository.AnswerRepository;
+import codesquad.service.QuestionService;
+import codesquad.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
+
+import static codesquad.web.UserController.SESSION_KEY;
+
 
 @Controller
 @RequestMapping("/questions")
+@Transactional
 public class QnaController {
-    public static List<Question> questions = new ArrayList<>();
 
     @Autowired
-    QuestionRepository questionRepository;
+    UserService userService;
 
+    @Autowired
+    QuestionService questionService;
+
+    @GetMapping("/form")
+    public String registForm(HttpSession session){
+//        Object sessionedUserObject = session.getAttribute(SESSION_KEY);
+//        if(sessionedUserObject == null){
+//            return "redirect:/users/login/form";
+//        }
+        SessionUtil.validateLogin(session);
+        return "/qna/form";
+    }
     @PostMapping
-    public String create(Question question) {
-        if (addQuestion(question))
-            return "redirect:/";
+    public String create(String title, String contents, HttpSession session) {
 
-        return "redirect:/error" + "/{}";
+        User writeUser = SessionUtil.getSessionedUser(session);
+        questionService.addQuestion(title, contents, writeUser);
+        return "redirect:/";
     }
 
     @GetMapping("/{id}")
     public String view(@PathVariable long id, Model model) {
-        model.addAttribute("question", questionRepository.findById(id).get());
+        model.addAttribute("question", questionService.getQuestionById(id));
+//        model.addAttribute("numAnswer", numAnswer);
         return "/qna/show";
     }
 
     @GetMapping("/{id}/form")
-    public String viewForUpdate(@PathVariable long id, Model model) {
-        model.addAttribute("question", questionRepository.findById(id).get());
+    public String viewForUpdate(@PathVariable long id, Model model, HttpSession session) {
+        User sessionedUser = SessionUtil.getSessionedUser(session);
+        model.addAttribute("question", questionService.getModifiableQuestion(sessionedUser, id));
         return "/qna/updateForm";
     }
 
     @PutMapping("/{id}")
-    public String updateQuestion(@PathVariable long id, Question question) {
-        Question targetQuestion = questionRepository.findById(id).get();
-        question.setId(targetQuestion.getId());
-        question.setWriteTime(targetQuestion.getWriteTime());
-        questionRepository.save(question);
+    public String updateQuestion(@PathVariable long id, String contents, String title, HttpSession session) {
+        User sessionedUser = SessionUtil.getSessionedUser(session);
+        questionService.updateQuestion(id, new Question(sessionedUser, title, contents));
         return "redirect:/questions/{id}";
     }
 
     @DeleteMapping("/{id}")
-    public String deleteQuestion(@PathVariable long id) {
-        questionRepository.deleteById(id);
+    public String deleteQuestion(@PathVariable long id,HttpSession session) {
+        User sessionedUser = SessionUtil.getSessionedUser(session);
+        questionService.deleteQuestionById(sessionedUser, id);
         return "redirect:/";
     }
-
-    private boolean addQuestion(Question question) {
-        questionRepository.save(question);
-        questions.add(question);
-        return true;
+    @Transactional
+    @PostMapping("/{questionId}/answers")
+    public String createAnswer(@PathVariable long questionId, String contents, HttpSession session) {
+        Question question = questionService.getQuestionById(questionId);
+        Answer answer = new Answer(SessionUtil.getSessionedUser(session), contents);
+        question.addAnswer(answer);
+        questionService.updateQuestion(questionId, question);
+        return "redirect:/questions/{questionId}";
+    }
+    @Transactional
+    @DeleteMapping("/{questionId}/answers/{answerId}")
+    public String deleteAnswer(@PathVariable long questionId, @PathVariable long answerId, HttpSession session) {
+        User sessionedUser = SessionUtil.getSessionedUser(session);
+        questionService.deleteAnswer(answerId, sessionedUser);
+        return "redirect:/questions/{questionId}";
     }
 }

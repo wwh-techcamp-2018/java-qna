@@ -1,17 +1,20 @@
 package codesquad.web;
 
-import org.springframework.stereotype.Controller;
+import codesquad.service.CustomException;
+import codesquad.service.CustomRedirectException;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@Controller
+@ControllerAdvice
 public class ErrorController {
-
-    @GetMapping("/error/{errorcase}")
-    public String error(@PathVariable String errorcase) {
-
-        return null;
+    @ExceptionHandler(CustomException.class)
+    public String errorHandling(Model model, CustomException exception) {
+        model.addAttribute("errorMessage", exception.getMessage());
+        return "/error/error";
     }
-
+    @ExceptionHandler(CustomRedirectException.class)
+    public String redirectHandling(CustomRedirectException exception){
+        return "redirect:/users/login/form";
+    }
 }

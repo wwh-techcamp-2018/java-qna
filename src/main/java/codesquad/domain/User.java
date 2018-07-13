@@ -1,6 +1,10 @@
 package codesquad.domain;
 
+import codesquad.service.CustomErrorMessage;
+import codesquad.service.CustomException;
+
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 public class User {
@@ -8,16 +12,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //AutoIncreasment 사용하는 설정.
     private Long id;
 
-    @Column(length = 30, unique = true, nullable = false)
+    @Column(length = 30, unique = true, nullable = false, updatable = false)
     private String userId;
+    @Column(nullable = false, updatable = false, length = 20)
     private String password;
+    @Column(nullable = false, length = 20)
     private String name;
+    @Column(nullable = false, length = 50)
     private String email;
 
     public User() {
 
     }
-
     public Long getId() {
         return id;
     }
@@ -67,5 +73,47 @@ public class User {
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 '}';
+    }
+
+    public void updateData(User user) {
+        if (!this.equals(user)) {
+            throw new CustomException(CustomErrorMessage.NOT_AUTHORIZED);
+        }
+        if (!matchPassword(user)) {
+            throw new CustomException(CustomErrorMessage.NOT_AUTHORIZED);
+        }
+        this.name = user.name;
+        this.email = user.email;
+    }
+
+    public boolean matchPassword(User user) {
+        return matchPassword(user.password);
+    }
+
+    public boolean matchPassword(String targetPassword) {
+        return password.equals(targetPassword);
+    }
+
+    public boolean matchUserId(User user) {
+        if(user == null || user.userId == null || userId == null) {
+            System.out.println(user);
+            System.out.println(this);
+            return false;
+        }
+        return userId.equals(user.userId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(userId, user.userId);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(userId);
     }
 }
