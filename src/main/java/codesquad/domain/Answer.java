@@ -31,7 +31,9 @@ public class Answer {
     private boolean deleted = false;
 
 
-    public Answer() {
+    public Answer(User writer, boolean deleted) {
+        this.writer = writer;
+        this.deleted = deleted;
     }
 
     public Long getId() {
@@ -83,9 +85,13 @@ public class Answer {
     }
 
     public boolean validateWriter(User user) {
-        if(!this.getWriter().equals(user)){
+        return this.getWriter().equals(user);
+    }
+
+    public void delete(User user) {
+        if(!this.validateWriter(user)){
             throw new AuthorizationException();
         }
-        return true;
+        this.setDeleted(true);
     }
 }

@@ -1,6 +1,7 @@
 package codesquad.domain;
 
 import codesquad.exception.AuthorizationException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -29,6 +30,7 @@ public class Question {
     private String contents;
 
 
+    @JsonIgnore
     @Where(clause = "deleted = false")
     @OrderBy("id ASC")
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
@@ -119,16 +121,19 @@ public class Question {
         return true;
     }
 
-    public boolean isDeletable() {
-        if(isRemainYoursAnswers())
-           throw new AuthorizationException();
-
-        return true;
-    }
-
-    private boolean isRemainYoursAnswers() {
+    boolean isNotDeletable() {
         return this.getAnswers().stream()
                 .filter(t -> !t.validateWriter(this.getWriter()))
                 .anyMatch(Answer::isDeleted);
+    }
+
+    public void delete(User user) {
+        if(isNotDeletable())
+            throw new AuthorizationException();
+
+        for (Answer answer : this.getAnswers())
+            answer.delete(user);
+
+        this.setDeleted(true);
     }
 }

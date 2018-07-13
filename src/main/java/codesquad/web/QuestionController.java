@@ -74,22 +74,13 @@ public class QuestionController {
     public String delete(@PathVariable long id, HttpSession session) {
         User user = Session.getUser(session);
         Question q = qRepository.findById(id).filter(u -> u.validateWriter(user)).orElseThrow(NotFoundException::new);
-        if(q.isDeletable())
-            deleteQuestion(q);
-
+        q.delete(user);
+        qRepository.save(q);
         return "redirect:/questions";
     }
 
     @ExceptionHandler({NotLoginException.class, NotFoundException.class, AuthorizationException.class})
     public String handleNotLogin() {
         return "redirect:/users/login";
-    }
-
-    private void deleteQuestion(Question q) {
-        for (Answer a : q.getAnswers()) {
-            a.setDeleted(true);
-        }
-        q.setDeleted(true);
-        qRepository.save(q);
     }
 }

@@ -44,7 +44,7 @@
                 <div class="qna-comment-slipp-articles">
 
                     {{#answers}}
-                    <article class="article" id="answer-{{id}}">
+                    <article class="article answer" id="answer-{{id}}" data-id='{{id}}'>
                         <div class="article-header">
                             <div class="article-header-thumb">
                                 <img src="https://graph.facebook.com/v2.3/1324855987/picture"
@@ -66,20 +66,17 @@
                                     <a class="link-modify-article" href="/questions/{{question.id}}/answers/{{id}}/form">수정</a>
                                 </li>
                                 <li>
-                                    <form class="delete-answer-form" action="/questions/{{question.id}}/answers/{{id}}" method="POST">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <button type="submit" class="delete-answer-button">삭제</button>
-                                    </form>
+                                    <a class="delete-answer-button" href="/api/questions/{{question.id}}/answers/{{id}}">삭제</a>
                                 </li>
                             </ul>
                         </div>
                     </article>
                     {{/answers}}
-                    <form class="submit-write" method="POST" action="/questions/{{question.id}}/answers">
+                    <form class="answer-form">
                         <div class="form-group" style="padding:14px;">
                             <textarea class="form-control" placeholder="Update your status" name="contents"></textarea>
                         </div>
-                        <button class="btn btn-success pull-right" type="submit">답변하기</button>
+                        <button class="btn btn-success pull-right" type="submit" data-qid="{{question.id}}">답변하기</button>
                         <div class="clearfix"/>
                     </form>
                 </div>
@@ -109,7 +106,7 @@
                     <a class="link-modify-article" href="/api/qna/updateAnswer/{3}">수정</a>
                 </li>
                 <li>
-                    <form class="delete-answer-form" action="/api/questions/{3}/answers/{4}" method="POST">
+                    <form class="delete-answer-form">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="delete-answer-button">삭제</button>
                     </form>
@@ -118,6 +115,7 @@
         </div>
     </article>
 </script>
-
+<script src="/js/qna.js"></script>
+<script src="/js/util.js"></script>
 {{/partial}}
 {{> base}}
