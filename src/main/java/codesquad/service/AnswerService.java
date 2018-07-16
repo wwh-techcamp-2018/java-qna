@@ -14,9 +14,9 @@ public class AnswerService {
     private AnswerRepository answerRepository;
 
     @Transactional
-    public void create(User loginUser, Long questionId, Answer newAnswer) {
+    public Answer create(User loginUser, Long questionId, Answer newAnswer) {
         Question savedQuestion = questionRepository.findById(questionId).get();
-        savedQuestion.createAnswer(loginUser, newAnswer);
+        return savedQuestion.createAnswer(loginUser, newAnswer);
     }
 
     @Transactional

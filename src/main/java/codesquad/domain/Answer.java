@@ -100,4 +100,16 @@ public class Answer {
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
     }
+
+    @Override
+    public String toString() {
+        return "Answer{" +
+                "id=" + id +
+                ", answerWriter=" + answerWriter +
+                ", question=" + question +
+                ", contents='" + contents + '\'' +
+                ", enrollTime='" + enrollTime + '\'' +
+                ", isDeleted=" + isDeleted +
+                '}';
+    }
 }

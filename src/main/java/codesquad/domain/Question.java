@@ -1,6 +1,7 @@
 package codesquad.domain;
 
 import codesquad.exception.UnAuthorizedException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Where;
 
@@ -33,6 +34,7 @@ public class Question {
     @Column(name = "deleted")
     private boolean isDeleted;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "question", cascade = CascadeType.PERSIST)
     private List<Answer> answers = new ArrayList<>();
 
@@ -60,9 +62,10 @@ public class Question {
         this.contents = updatedQuestion.getContents();
     }
 
-    public void createAnswer(User loginUser, Answer newAnswer) {
+    public Answer createAnswer(User loginUser, Answer newAnswer) {
         newAnswer.create(loginUser, this);
         this.answers.add(newAnswer);
+        return newAnswer;
     }
 
     public void deleteAnswer(User loginUser, Answer answer) {
