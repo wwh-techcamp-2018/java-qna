@@ -4,7 +4,6 @@ import codesquad.domain.Answer;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
-import codesquad.exception.AnswerFailureException;
 import codesquad.exception.QuestionFailureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,10 +53,10 @@ public class QuestionService {
         questionRepository.save(question);
     }
 
-    public void addAnswer(User user, Long questionId, Answer answer) {
+    public Answer addAnswer(User user, Long questionId, Answer answer) {
         Question question = findQuestionById(questionId);
         question.addAnswer(user, answer);
-        questionRepository.save(question);
+        return questionRepository.save(question).getLatestAnswer();
     }
 
 

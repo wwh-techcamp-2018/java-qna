@@ -76,9 +76,6 @@ public class Answer {
         this.content = content;
     }
 
-    public Date getDate() {
-        return date;
-    }
 
     public String getFormattedDate() {
         return DateUtil.getFormattedDate(date);
@@ -90,6 +87,10 @@ public class Answer {
 
     public void setQuestion(Question question) {
         this.question = question;
+    }
+
+    public Question getQuestion() {
+        return question;
     }
 
     public boolean isDeleted() {

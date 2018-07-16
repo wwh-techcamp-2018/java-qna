@@ -2,7 +2,6 @@ package codesquad.domain;
 
 import codesquad.exception.AnswerFailureException;
 import codesquad.exception.QuestionFailureException;
-import codesquad.util.DateUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Where;
 
@@ -29,7 +28,7 @@ public class Question {
 
     @Lob
     @Column(nullable = false)
-    private String contents;
+    private String content;
 
     @Column(length = 16, nullable = false)
     private Date date;
@@ -50,7 +49,7 @@ public class Question {
         this.id = id;
         this.writer = writer;
         this.title = title;
-        this.contents = contents;
+        this.content = contents;
         this.date = date;
         this.deleted = deleted;
         this.answers = answers;
@@ -68,6 +67,13 @@ public class Question {
 
     public List<Answer> getAnswers() {
         return answers;
+    }
+
+    @JsonIgnore
+    public Answer getLatestAnswer() {
+        if (answers == null || answers.isEmpty())
+            throw new QuestionFailureException();
+        return answers.get(answers.size() - 1);
     }
 
     public Answer getAnswer(Long answerId) {
@@ -99,9 +105,9 @@ public class Question {
         return date;
     }
 
-    public String getFormattedDate() {
-        return DateUtil.getFormattedDate(date);
-    }
+//    public String getFormattedDate() {
+//        return DateUtil.getFormattedDate(date);
+//    }
 
     public Long getId() {
         return id;
@@ -127,19 +133,19 @@ public class Question {
         this.title = title;
     }
 
-    public String getContents() {
-        return contents;
+    public String getContent() {
+        return content;
     }
 
-    public void setContents(String contents) {
-        this.contents = contents;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public void update(Question updateQuestion, User user) throws QuestionFailureException {
         if (!isOwner(user))
             throw new QuestionFailureException("자신의 글만 수정할 수 있습니다.");
         title = updateQuestion.title;
-        contents = updateQuestion.contents;
+        content = updateQuestion.content;
     }
 
     boolean isDeletable(User user) {

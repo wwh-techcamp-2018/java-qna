@@ -59,4 +59,15 @@ public class QuestionTest {
         question.setAnswers(answers1);
         question.delete(user1);
     }
+
+    @Test
+    public void getLatestAnswer(){
+        question.setAnswers(answers1);
+        assertThat(answers1.get(answers1.size() - 1 )).isEqualTo(question.getLatestAnswer());
+    }
+
+    @Test(expected = QuestionFailureException.class)
+    public void getLatestAnswerExceptionTest(){
+        assertThat(answers1.get(answers1.size() - 1 )).isEqualTo(question.getLatestAnswer());
+    }
 }
