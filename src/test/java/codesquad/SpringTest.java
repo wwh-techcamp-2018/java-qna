@@ -5,13 +5,10 @@ import codesquad.domain.Question;
 import codesquad.domain.User;
 import codesquad.repository.QuestionRepository;
 import codesquad.repository.UserRepository;
-import codesquad.service.QuestionService;
-import codesquad.service.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -35,21 +32,14 @@ public class SpringTest {
     UserRepository userRepository;
 
 
-    @Test
-    public void testTime(){
-       System.out.println(userRepository.toString());
-       Question question = new Question(userRepository.findByUserId("aa").get(), "A", "B");
-       assertThat(question).isNotNull();
-       questionRepository.save(question);
-       assertThat(questionRepository.findById(new Long(1))).isNotNull();
-    }
-    @Test
-    public void userServiceTest(){
-        UserService service = new UserService(userRepository);
-
-        assertThat(service.getUserByUserId("aa")).isNotNull();
-    }
-
+//    @Test
+//    public void testTime(){
+//       System.out.println(userRepository.toString());
+//       Question question = new Question(userRepository.findByUserId("aa").get(), "A", "B");
+//       assertThat(question).isNotNull();
+//       questionRepository.save(question);
+//       assertThat(questionRepository.findById(new Long(1))).isNotNull();
+//    }
     /*
     equals() 기능 공부 테스트
      */

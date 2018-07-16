@@ -1,9 +1,9 @@
 package codesquad.web;
 
 import codesquad.domain.User;
-import codesquad.service.CustomErrorMessage;
-import codesquad.service.CustomException;
-import codesquad.service.CustomRedirectException;
+import codesquad.domain.exception.CustomErrorMessage;
+import codesquad.domain.exception.CustomException;
+import codesquad.domain.exception.CustomRedirectException;
 
 import javax.servlet.http.HttpSession;
 

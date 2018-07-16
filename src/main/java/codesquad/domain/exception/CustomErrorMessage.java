@@ -1,4 +1,4 @@
-package codesquad.service;
+package codesquad.domain.exception;
 
 public enum CustomErrorMessage {
 

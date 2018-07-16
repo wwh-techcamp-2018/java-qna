@@ -6,6 +6,7 @@
                 <h2 class="qna-title">{{question.title}}</h2>
             </header>
             <div class="content-main">
+                <input id="questionId" type="hidden" value="{{question.id}}">
                 <article class="article">
                     <div class="article-header">
                         <div class="article-header-thumb">
@@ -45,8 +46,9 @@
                     <div class="qna-comment-slipp">
                         <p class="qna-comment-count"><strong>{{question.answerCount}}</strong>개의 의견</p>
                         <div class="qna-comment-slipp-articles">
+                            <div class="answers">
                             {{#question.answers}}
-                            <article class="article" id="answer-1405">
+                            <article class="article" id="answer-{{id}}">
                                 <div class="article-header">
                                     <div class="article-header-thumb">
                                         <img src="https://graph.facebook.com/v2.3/1324855987/picture"
@@ -69,22 +71,30 @@
                                                href="/questions/{{question.id}}/answers/{{id}}/form">수정</a>
                                         </li>
                                         <li>
-                                            <form class="delete-answer-form" action="/questions/{{question.id}}/answers/{{id}}"
-                                                  method="POST">
-                                                <input type="hidden" name="_method" value="DELETE">
-                                                <button type="submit" class="delete-answer-button">삭제</button>
-                                            </form>
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="button">
+                                                <a class="answer-delete" href="/api/questions/{{question.id}}/answers/{{id}}" >삭제</a>
+                                            </button>
                                         </li>
                                     </ul>
                                 </div>
                             </article>
                             {{/question.answers}}
+                            </div>
+                            <!--                            <form class="submit-write" name="anwser" method="POST" action="/questions/{{question.id}}/answers">
                             <form class="submit-write" name="anwser" method="POST" action="/questions/{{question.id}}/answers">
                                 <div class="form-group" name="anwser" style="padding:14px;">
                                     <textarea class="form-control" placeholder="Update your status" name="contents"></textarea>
                                 </div>
                                 <button class="btn btn-success pull-right">답변하기</button>
                                 <div class="clearfix"/>
+                                -->
+                            <form class="answer-form" method="post" action="/api/questions/{{id}}/answers">
+                                <div class="form-group">
+                                    <textarea id="answerAddBtn" class="form-control" placeholder="당신도 답을 달아보세요" name="contents"></textarea>
+                                </div>
+                                <input type="submit" class="btn" value="답변하기" />
+                                <div class="clearfix" />
                             </form>
                         </div>
                     </div>
@@ -123,7 +133,7 @@
         </div>
     </article>
 </script>
-
+<script src="/js/qna.js" defer></script>
 {{/partial}}
 
 {{> base}}

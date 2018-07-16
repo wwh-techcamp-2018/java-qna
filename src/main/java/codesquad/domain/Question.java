@@ -1,17 +1,20 @@
 package codesquad.domain;
 
-import codesquad.service.CustomErrorMessage;
-import codesquad.service.CustomException;
+import codesquad.domain.exception.CustomErrorMessage;
+import codesquad.domain.exception.CustomException;
+import codesquad.web.ValidateUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Entity
 @Where(clause = "deleted = false")
-public class Question {
+public class Question implements Serializable {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,26 +34,37 @@ public class Question {
     @Column(nullable = false, length = 30)
     private String writeTime;
 
-    @OneToMany(mappedBy="question", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "question")
     @PrimaryKeyJoinColumn
     @Where(clause = "deleted = false")
     @OrderBy("id ASC")
+    @JsonIgnore
     private List<Answer> answers;
 
     @Column(nullable = false)
     private boolean deleted;
 
+    @Column(nullable = false)
+    private int answerCount;
+
 
     public Question() {
-        this(null,"defaultTitle","defaultContents");
+        answerCount = 0;
     }
 
-    public Question(User writer, String title, String contents) {
-        checkFields(title, contents);
+    private Question(User writer, String title, String contents, String writeTime) {
         this.writer = writer;
         this.title = title;
         this.contents = contents;
-        this.writeTime = calculateWriteTime();
+        this.writeTime = writeTime;
+        answerCount = 0;
+    }
+
+    public static Question newQuestion(User writer, String title, String contents){
+        if( !(ValidateUtils.validateString(title) && ValidateUtils.validateString(contents) && ValidateUtils.validateObject(writer))){
+            throw new CustomException(CustomErrorMessage.BLANK);
+        }
+        return new Question(writer, title, contents, calculateWriteTime());
     }
 
     public Long getId() {
@@ -97,8 +111,12 @@ public class Question {
         this.answers = answers;
     }
 
-    public int getAnswerCount(){
-        return this.answers.size();
+    public int getAnswerCount() {
+        return answerCount;
+    }
+
+    public void setAnswerCount(int answerCount) {
+        this.answerCount = answerCount;
     }
 
     @Override
@@ -114,58 +132,56 @@ public class Question {
     }
 
     public void updateData(Question question) {
-        if(!writer.matchUserId(question.writer))
-            throw new CustomException(CustomErrorMessage.NOT_AUTHORIZED);
+        writer.matchUser(question.writer);
         this.contents = question.contents;
         this.title = question.title;
         this.answers = question.answers;
     }
 
-    public boolean unEqualWriter(User user) {
-        return !writer.equals(user);
-    }
-
-    private String calculateWriteTime() {
+    private static String calculateWriteTime() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DATE_FORMAT);
         return dtf.format(LocalDateTime.now());
     }
 
-    public static void checkFields(String title, String contents){
-        if(contents == null || title == null || contents.equals("") || title.equals("")) {
+    public static void checkFields( String title, String contents) {
+        if (contents == null || title == null || contents.equals("") || title.equals("")) {
             throw new CustomException(CustomErrorMessage.BLANK);
         }
     }
 
-    public void addAnswer(Answer answer){
+    public void addAnswer(Answer answer) {
         this.answers.add(answer);
         answer.setQuestion(this);
+        answerCount++;
     }
 
-//    public void deleteAnswer(long answerId){
-////        Answer answer = answers.stream().filter(a -> a.isMatchedId(answerId)).findFirst().get();
-////        //answer.setWriter(null);
-////        answer.setQuestion(null);
-////        answers.removeIf(a -> a.isMatchedId(answerId));
-////    }
 
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public boolean deletable(){
+    public boolean deletable() {
         return (answers.size() == 0) || checkAnswerWriter();
     }
 
-    private boolean checkAnswerWriter(){
+    private boolean checkAnswerWriter() {
         return answers.stream().allMatch(answer -> answer.validateWriter(writer));
     }
 
-    public void deleteQuestion(User user){
-        if(unEqualWriter(user) || !deletable())
+    public void deleteQuestion(User user) {
+        if ( !writer.equals(user) || !deletable())
             throw new CustomException(CustomErrorMessage.NOT_AUTHORIZED);
         answers.stream().filter(answer -> !(answer.isDeleted()))
-                .forEach(restAnswer -> restAnswer.delete(writer));
+                .forEach(restAnswer -> restAnswer.delete(writer, this));
         deleted = true;
+        answerCount = 0;
     }
+
+    public void deleteAnswer(){
+        answerCount--;
+    }
+
+    public void checkDeleteAuthority(User sessionedUser) {
+            if(!writer.equals(sessionedUser))
+                throw new CustomException(CustomErrorMessage.NOT_AUTHORIZED);
+    }
+
+
 
 }

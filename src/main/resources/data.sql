@@ -3,9 +3,9 @@ INSERT INTO USER (id, user_id, password, name, email) VALUES (null, 'bb', 'test'
 insert
     into
         question
-        (id, contents, title, write_time, writer_id, deleted)
+        (id, contents, title, write_time, writer_id, deleted, answer_count)
     values
-        (null, 'testContents', 'test', '2018-07-11 18:55', 1, false);
+        (null, 'testContents', 'test', '2018-07-11 18:55', 1, false, 2);
 
 
 insert

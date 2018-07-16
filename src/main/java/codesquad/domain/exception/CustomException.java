@@ -1,4 +1,4 @@
-package codesquad.service;
+package codesquad.domain.exception;
 
 public class CustomException extends RuntimeException {
 
@@ -6,6 +6,6 @@ public class CustomException extends RuntimeException {
         super(message);
     }
     public CustomException(CustomErrorMessage errorMessage){
-        super(errorMessage.getMessage());
+        this(errorMessage.getMessage());
     }
 }

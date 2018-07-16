@@ -1,7 +1,8 @@
 package codesquad.domain;
 
-import codesquad.service.CustomErrorMessage;
-import codesquad.service.CustomException;
+import codesquad.domain.exception.CustomErrorMessage;
+import codesquad.domain.exception.CustomException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class Answer {
     @Column(nullable = false, length = 200)
     private String contents;
     @ManyToOne
+//    @JsonIgnore
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_answer_to_question"))
     private Question question;
 
@@ -107,13 +109,14 @@ public class Answer {
     public boolean isMatchedId(long answerId){
         return this.id == answerId;
     }
-    public void delete(User sessionedUser){
-        if(deleted)
+    public void delete(User sessionedUser, Question question){
+        if(deleted || !this.question.equals(question))
             throw new CustomException(CustomErrorMessage.INCORRECT_ACCESS);
         if(!validateWriter(sessionedUser)){
             throw new CustomException(CustomErrorMessage.NOT_AUTHORIZED);
         }
         this.deleted = true;
+        question.deleteAnswer();
     }
 
     public boolean isDeleted() {
