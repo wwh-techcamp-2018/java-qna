@@ -3,6 +3,7 @@ package codesquad.domain;
 import codesquad.exception.UnDeletableQuestionException;
 import codesquad.util.DateUtils;
 import codesquad.util.SessionUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Where;
 
@@ -26,10 +27,11 @@ public class Question {
     private String contents;
     @Column(nullable = false)
     private String time;
-    @Column
+    @Column(nullable = false)
     private boolean deleted;
 
     @OneToMany(mappedBy = "question")
+    @JsonIgnore
     @Where(clause = "deleted = false")
     @Cascade(value = org.hibernate.annotations.CascadeType.REMOVE)
     private List<Answer> answers = new ArrayList<>();
@@ -84,7 +86,7 @@ public class Question {
         this.time = DateUtils.getCurrentTime();
     }
 
-    public void updateTime(String time) {
+    public void updateTime(String date) {
         this.time = time;
     }
 

@@ -20,7 +20,6 @@ import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Controller
 @RequestMapping("/questions")
 public class QuestionController {

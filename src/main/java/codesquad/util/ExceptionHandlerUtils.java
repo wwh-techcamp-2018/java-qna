@@ -22,4 +22,5 @@ public class ExceptionHandlerUtils {
     public String unDeletableQuestionExceptionHandler() {
         return "/error/error";
     }
+
 }

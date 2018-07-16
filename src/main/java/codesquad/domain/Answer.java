@@ -4,8 +4,6 @@ import codesquad.util.DateUtils;
 import codesquad.util.SessionUtils;
 
 import javax.persistence.*;
-import javax.servlet.http.HttpSession;
-import javax.websocket.Session;
 
 @Entity
 public class Answer {
@@ -95,6 +93,7 @@ public class Answer {
     }
 
     // TODO getWriterId() 가 질문을 쓴 사람과 아이디가 같으면 삭제, 아니면 냅두기
+
     public void delete(User loginUser) {
         if(!isDeletable(loginUser)) return;
         delete();
@@ -105,7 +104,19 @@ public class Answer {
     }
 
     public boolean isDeletable(User loginUser) {
-        SessionUtils.getInstance().checkSameUser(loginUser, getWriterId());
+        SessionUtils.getInstance().checkSameUserFromApi(loginUser, getWriterId());
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Answer{" +
+                "id=" + id +
+                ", time='" + time + '\'' +
+                ", contents='" + contents + '\'' +
+                ", deleted=" + deleted +
+                ", writer=" + writer +
+                ", question=" + question +
+                '}';
     }
 }
