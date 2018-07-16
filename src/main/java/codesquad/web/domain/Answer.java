@@ -1,10 +1,13 @@
 package codesquad.web.domain;
 
 import codesquad.web.exception.NoLoginException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
 @Entity
+@Where(clause="deleted = false")
 public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,6 +15,7 @@ public class Answer {
 
     @ManyToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_answer_to_question"))
+    @JsonIgnore
     private Question question;
     private String contents;
     @ManyToOne
