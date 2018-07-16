@@ -80,32 +80,6 @@ public class QuestionController {
         return "redirect:/";
     }
 
-    @DeleteMapping("/questions/{questionId}/answers/{id}")
-    public String deleteAnswer(@PathVariable int questionId, @PathVariable int id, HttpSession session){
-        User currentUser = SessionUtility.getCurrentUser(session);
-        Answer answer = answerRepository.findById(id).get();
-        if(!answer.isWriter(currentUser)) {
-            return "redirect:/questions/error";
-        }
-        answer.setDeleted();
-        answerRepository.save(answer);
-        return "redirect:/questions/" + questionId;
-
-
-    }
-
-    @PostMapping("/questions/{id}")
-    public String addAnswer(@PathVariable int id, HttpSession session, Answer answer) {
-        User currentUser = SessionUtility.getCurrentUser(session);
-        if(currentUser == null) {
-            return "redirect:/questions/error";
-        }
-
-        answer.setQuestion(questionRepository.findById(id).get());
-        answer.setWriter(currentUser);
-        answerRepository.save(answer);
-        return "redirect:/questions/" + id;
-    }
 
     @GetMapping("/questions/error")
     public String getQuestionError() {
