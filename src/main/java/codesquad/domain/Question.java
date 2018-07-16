@@ -1,6 +1,7 @@
 package codesquad.domain;
 
 import codesquad.exception.UnAuthorizedDeleteException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -25,6 +26,7 @@ public class Question {
     @OneToMany(mappedBy = "question", fetch = FetchType.LAZY)
     @Where(clause = "deleted = false")
     @OrderBy("id ASC")
+    @JsonIgnore
     private List<Answer> answers;
 
     private boolean deleted = false;

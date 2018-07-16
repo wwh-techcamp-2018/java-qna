@@ -15,7 +15,6 @@ public class Answer {
 
     @ManyToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_answer_to_question"))
-    @JsonIgnore
     private Question question;
 
     @OneToOne
@@ -29,6 +28,12 @@ public class Answer {
 
     public Answer(Long id, String contents, Question question, User writer) {
         this.id = id;
+        this.contents = contents;
+        this.question = question;
+        this.writer = writer;
+    }
+
+    public Answer(String contents, Question question, User writer) {
         this.contents = contents;
         this.question = question;
         this.writer = writer;

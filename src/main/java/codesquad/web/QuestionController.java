@@ -82,22 +82,4 @@ public class QuestionController {
         questionRepository.save(question.delete(SessionUtil.getUser(session).get()));
         return "redirect:/qnas";
     }
-
-    @PostMapping("/{questionId}/answers")
-    public String create(@PathVariable Long questionId, Answer answer, HttpSession session) {
-        answer.setQuestion(questionRepository.findById(questionId).get());
-        answer.setWriter(SessionUtil.getUser(session).get());
-        answerRepository.save(answer);
-        return "redirect:/qnas/" + questionId;
-    }
-
-    @DeleteMapping("/{questionId}/answers/{answerId}")
-    public String delete(@PathVariable Long questionId, @PathVariable Long answerId, HttpSession session) {
-        Answer answer = answerRepository.findById(answerId).get();
-        if(!answer.matchWriter(SessionUtil.getUser(session).get())) {
-            throw new UnAuthorizedDeleteException("다른 사람의 댓글을 삭제할 수 없습니다.");
-        }
-        answerRepository.save(answer.delete());
-        return "redirect:/qnas/" + questionId;
-    }
 }

@@ -46,7 +46,7 @@
                       <p class="qna-comment-count"><strong>{{answerCount}}</strong>개의 의견</p>
                       <div class="qna-comment-slipp-articles">
                           {{#answers}}
-                              <article class="article" id="answer-1405">
+                              <article class="article" answer-id="{{id}}">
                                   <div class="article-header">
                                       <div class="article-header-thumb">
                                           <img src="https://graph.facebook.com/v2.3/1324855987/picture" class="article-author-thumb" alt="">
@@ -67,16 +67,16 @@
                                               <a class="link-modify-article" href="/questions/413/answers/1405/form">수정</a>
                                           </li>
                                           <li>
-                                              <form class="delete-answer-form" action="/qnas/{{qna.id}}/answers/{{id}}" method="POST">
+                                              <form class="delete-answer-form" id="deleteBtn">
                                                   <input type="hidden" name="_method" value="DELETE">
-                                                  <button type="submit" class="delete-answer-button">삭제</button>
+                                                  <button type="submit" class="delete-answer-button" qna-id="{{qna.id}}" answer-id="{{id}}">삭제</button>
                                               </form>
                                           </li>
                                       </ul>
                                   </div>
                               </article>
                           {{/answers}}
-                          <form class="submit-write" method="POST" action="/qnas/{{qna.id}}/answers">
+                          <form class="submit-write" id="submitBtn" qna-id="{{qna.id}}">
                               <div class="form-group" style="padding:14px;">
                                   <textarea class="form-control" name="contents" placeholder="Update your status"></textarea>
                               </div>
