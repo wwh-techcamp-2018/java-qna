@@ -1,8 +1,8 @@
 package codesquad.web;
 
-import codesquad.Exception.RedirectException;
-import codesquad.domain.*;
-import codesquad.util.SessionUtil;
+import codesquad.domain.User;
+import codesquad.repository.UserRepository;
+import codesquad.utils.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,26 +12,13 @@ import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/users")
+@RequestMapping("/users") // 대표 URL을 요청에 매핑
 public class UserController {
-    @Autowired
+
+    @Autowired // Spring framework이 자동으로 인터페이스 - 객체 매핑을 해줍니다.
     private UserRepository userRepository;
 
-    @PostMapping("/login")
-    public String login(User user, HttpSession session) {
-        Optional<User> maybeUser = userRepository.findByUserId(user.getUserId());
-        maybeUser.filter(u -> u.isCorrectPassword(user))
-                .orElseThrow(() -> new RedirectException("회원 정보를 확인해주세요."));
-        session.setAttribute("sessionedUser", maybeUser.get());
-        return "redirect:/";
-    }
-
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.removeAttribute("sessionedUser");
-        return "redirect:/";
-    }
-
+    // index 값이 동적으로 달라진다.
     @PostMapping("")
     public String create(User user) {
         userRepository.save(user);
@@ -39,38 +26,48 @@ public class UserController {
     }
 
     @GetMapping("")
-    public String list(Model model) {
+    public String list(Model model, HttpSession session) {
+        User sessionedUser = SessionUtil.getUser(session);
         model.addAttribute("users", userRepository.findAll());
         return "/user/list";
     }
 
-    @GetMapping("/{index}")
-    public String show(@PathVariable Long index, Model model) {
-        User user = userRepository.findById(index).get();
-        model.addAttribute("user", user);
+    @GetMapping("/{userId}")
+    public String show(@PathVariable String userId, Model model) {
+        model.addAttribute("user", userRepository.findByUserId(userId));
         return "/user/profile";
     }
 
-    @GetMapping("/{id}/form")
-    public String findUser(@PathVariable long id, HttpSession session, Model model) {
-        SessionUtil.validateSession(session);
-        User user = SessionUtil.getSessionUser(session);
-        user.validateUserId(id);
-        model.addAttribute("user", user);
+    @GetMapping("/{userId}/form")
+    public String showUpdateForm(@PathVariable String userId, Model model) {
+        model.addAttribute("user", userRepository.findByUserId(userId));
         return "/user/updateForm";
     }
 
-    @PutMapping("")
-    public String updateUser(User user, Model model, HttpSession session) {
-        User original = findUserWithId(SessionUtil.getSessionUser(session).getId(), userRepository);
-        original.update(user);
-        userRepository.save(original);
+    @PutMapping("/{userId}")
+    public String update(User user, HttpSession session) {
+        User userOrigin = userRepository.findByUserId(user.getUserId());
+        userOrigin.update(user);
+        SessionUtil.removeUser(session);
+        SessionUtil.setUser(session, userOrigin);
+        userRepository.save(userOrigin);
         return "redirect:/users";
     }
 
-    static User findUserWithId(Long id, UserRepository userRepository) {
-        Optional<User> userOptional = userRepository.findById(id);
-        userOptional.orElseThrow(() -> new RedirectException("잘못된 회원입니다."));
-        return userOptional.get();
+    @PostMapping("/login")
+    public String login(String userId, String password, HttpSession session) {
+        Optional<User> optionalUser = userRepository.findByUserIdAndPassword(userId, password);
+        if (User.isCorrectUser(optionalUser)) {
+            SessionUtil.setUser(session, optionalUser.get());
+            return "redirect:/";
+        }
+        return "/user/login_failed";
+
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        SessionUtil.removeUser(session);
+        return "redirect:/";
     }
 }

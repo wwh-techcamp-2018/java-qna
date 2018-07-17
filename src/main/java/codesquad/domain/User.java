@@ -1,11 +1,9 @@
 package codesquad.domain;
 
-
-import codesquad.Exception.RedirectException;
-
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.Objects;
-
+import java.util.Optional;
 
 @Entity
 public class User {
@@ -13,29 +11,30 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // TODO: 2018. 7. 9. ";"이 포함된 문자열이 데이터베이스로 넘어가면 안 됩니다. 
+    @Size(min = 1)
     @Column(length = 30, unique = true, nullable = false)
     private String userId;
-
+    @Size(min = 1)
+    @Column(nullable = false)
     private String password;
+    @Size(min = 1)
+    @Column(nullable = false)
     private String name;
     private String email;
-
-    public User() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public User(String userId, String password, String name, String email) {
         this.userId = userId;
         this.password = password;
         this.name = name;
         this.email = email;
+    }
+
+    public User() {
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getUserId() {
@@ -48,6 +47,10 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public void setUserId(String userId) {
@@ -66,24 +69,15 @@ public class User {
         this.email = email;
     }
 
-    public String getEmail() {
-        return email;
+    public void update(User target) {
+        if (target.getPassword().equals(password)) {
+            name = target.name;
+            email = target.email;
+        }
     }
 
-    public boolean isCorrectPassword(User user) {
-        return this.password.equals(user.password);
-    }
-
-    public void validateUserId(long id) {
-        if (this.id != id)
-            throw new RedirectException("접근권한이 없습니다.");
-    }
-
-    public void update(User user) {
-        if (!isCorrectPassword(user))
-            throw new RedirectException("비밀번호가 틀렸습니다.");
-        this.name = user.name;
-        this.email = user.email;
+    public static boolean isCorrectUser(Optional<User> optionalUser) {
+        return optionalUser.isPresent();
     }
 
     @Override
